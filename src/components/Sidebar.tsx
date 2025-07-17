@@ -1,0 +1,62 @@
+import React from "react";
+import {
+  LayoutDashboard,
+  Award,
+  CreditCard,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import "../styles/Sidebar.css";
+
+interface SidebarProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({
+  activeTab,
+  setActiveTab,
+}) => {
+  const { logout } = useAuth();
+
+  const menuItems = [
+    { id: "dashboard", label: "Панель управления", icon: LayoutDashboard },
+    { id: "payments", label: "Платежи", icon: CreditCard },
+    { id: "settings", label: "Настройки", icon: Settings },
+  ];
+
+  return (
+    <div className="sidebar">
+      <div className="sidebar-header">
+        <h2 className="sidebar-title">Админ панель</h2>
+        <p className="sidebar-subtitle">Система управления клиникой</p>
+      </div>
+
+      <nav className="sidebar-nav">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`sidebar-button ${
+                activeTab === item.id ? "active" : ""
+              }`}
+            >
+              <Icon className="sidebar-icon" />
+              {item.label}
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="sidebar-footer">
+        <button onClick={logout} className="logout-button">
+          <LogOut className="logout-icon" />
+          Выйти
+        </button>
+      </div>
+    </div>
+  );
+};

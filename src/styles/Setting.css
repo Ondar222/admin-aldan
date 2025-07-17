@@ -1,0 +1,278 @@
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.settings-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #111827;
+  margin: 0;
+}
+
+.save-button {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-button:hover {
+  background-color: #1d4ed8;
+}
+
+.save-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.save-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.settings-card {
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.card-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #2563eb;
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.input-group {
+  margin-bottom: 0.75rem;
+}
+
+.double-width {
+  grid-column: span 1;
+}
+
+@media (min-width: 768px) {
+  .double-width {
+    grid-column: span 2;
+  }
+}
+
+.input-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: #9ca3af;
+}
+
+.input-with-icon .input-field {
+  padding-left: 2.25rem;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-input {
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  appearance: none;
+  position: relative;
+  cursor: pointer;
+}
+
+.checkbox-input:checked {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.checkbox-input:checked::after {
+  content: "";
+  position: absolute;
+  left: 0.25rem;
+  top: 0.125rem;
+  width: 0.25rem;
+  height: 0.5rem;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-label {
+  font-size: 0.875rem;
+  color: #111827;
+  cursor: pointer;
+}
+
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+.alert-box {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.alert-box.warning {
+  background-color: #fef9c3;
+  border: 1px solid #fef08a;
+}
+
+.alert-box.danger {
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+}
+
+.alert-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0 0 0.5rem 0;
+}
+
+.alert-box.warning .alert-title {
+  color: #92400e;
+}
+
+.alert-box.danger .alert-title {
+  color: #991b1b;
+}
+
+.alert-text {
+  font-size: 0.875rem;
+  margin: 0 0 0.75rem 0;
+}
+
+.alert-box.warning .alert-text {
+  color: #92400e;
+}
+
+.alert-box.danger .alert-text {
+  color: #991b1b;
+}
+
+.alert-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.alert-button.warning {
+  background-color: #d97706;
+  color: white;
+}
+
+.alert-button.warning:hover {
+  background-color: #b45309;
+}
+
+.alert-button.danger {
+  background-color: #dc2626;
+  color: white;
+}
+
+.alert-button.danger:hover {
+  background-color: #b91c1c;
+}
