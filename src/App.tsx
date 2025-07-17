@@ -1,16 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Login } from './components/Login';
-import { Dashboard } from './components/Dashboard';
-import { PaymentSystem } from './components/PaymentSystem';
-import { Settings } from './components/Settings';
-import { Sidebar } from './components/Sidebar';
-import { Header } from './components/Header';
-import { useAuth } from './hooks/useAuth';
-import { AuthProvider } from './contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import { Login } from "./components/Login";
+import { Dashboard } from "./components/Dashboard";
+import { PaymentSystem } from "./components/PaymentSystem";
+import { Settings } from "./components/Settings";
+import { Sidebar } from "./components/Sidebar";
+import { Header } from "./components/Header";
+import { useAuth } from "./hooks/useAuth";
+import { AuthProvider } from "./contexts/AuthContext";
+import "./styles/App.css";
 
 function AppContent() {
   const { user, isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when screen size changes
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   if (!isAuthenticated) {
     return <Login />;
@@ -18,11 +32,11 @@ function AppContent() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
+      case "dashboard":
         return <Dashboard />;
-      case 'payments':
+      case "payments":
         return <PaymentSystem />;
-      case 'settings':
+      case "settings":
         return <Settings />;
       default:
         return <Dashboard />;
@@ -30,13 +44,20 @@ function AppContent() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div className="flex-1 flex flex-col">
-        <Header user={user} />
-        <main className="flex-1 overflow-y-auto p-6">
-          {renderContent()}
-        </main>
+    <div className="app-container">
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+      />
+      <div className="app-main">
+        <Header
+          user={user}
+          isMobileMenuOpen={isMobileMenuOpen}
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
+        />
+        <main className="app-content">{renderContent()}</main>
       </div>
     </div>
   );

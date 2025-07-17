@@ -18,7 +18,7 @@
 }
 
 .login-header {
-  padding: 2rem;
+  padding: 1.5rem;
   background: linear-gradient(to right, #2563eb 0%, #4f46e5 100%);
   color: white;
 }
@@ -37,7 +37,7 @@
 }
 
 .logo-text {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
 }
@@ -46,13 +46,14 @@
   color: #bfdbfe;
   text-align: center;
   margin: 0;
+  font-size: 0.875rem;
 }
 
 .login-form {
-  padding: 2rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .form-group {
@@ -139,6 +140,7 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 0.875rem;
 }
 
 .submit-button:hover {
@@ -194,13 +196,50 @@
   color: #1e40af;
 }
 
-@media (max-width: 640px) {
-  .login-card {
-    max-width: 100%;
+/* Mobile responsive styles */
+@media (min-width: 768px) {
+  .login-header {
+    padding: 2rem;
   }
 
-  .login-header,
+  .logo-text {
+    font-size: 1.5rem;
+  }
+
+  .login-subtitle {
+    font-size: 1rem;
+  }
+
   .login-form {
-    padding: 1.5rem;
+    padding: 2rem;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 0.5rem;
+  }
+
+  .login-card {
+    max-width: 100%;
+    border-radius: 0.75rem;
+  }
+
+  .login-header {
+    padding: 1rem;
+  }
+
+  .logo-text {
+    font-size: 1.125rem;
+  }
+
+  .login-form {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .form-input {
+    font-size: 1rem; /* Prevent zoom on iOS */
   }
 }
