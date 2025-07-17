@@ -120,7 +120,7 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1 className="dashboard-title">Электронные карты клиники</h1>
+        <h1 className="dashboard-title">Электронные сертификаты клиники</h1>
         <p className="dashboard-subtitle">
           Сертификаты для оплаты медицинских услуг. Поиск, создание и управление
           балансом

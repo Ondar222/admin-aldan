@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface User {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'manager';
+  role: "admin" | "manager";
   avatar?: string;
 }
 
@@ -21,20 +21,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Check for stored auth token
-    const token = localStorage.getItem('auth_token');
-    const userData = localStorage.getItem('user_data');
-    
+    const token = localStorage.getItem("auth_token");
+    const userData = localStorage.getItem("user_data");
+
     if (token && userData) {
       setUser(JSON.parse(userData));
       setIsAuthenticated(true);
@@ -44,48 +46,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Mock user data
       const mockUser: User = {
-        id: '1',
+        id: "1",
         email,
-        name: 'Администратор',
-        role: 'admin',
-        avatar: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2'
+        name: "Администратор",
+        role: "admin",
+        avatar:
+          "https://media.istockphoto.com/id/2149116891/ru/%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D0%B0%D1%8F/%D0%BC%D1%83%D0%B6%D1%81%D0%BA%D0%BE%D0%B9-%D1%81%D0%B8%D0%BB%D1%83%D1%8D%D1%82-%D0%BB%D0%B8%D1%86%D0%B0-%D0%B8%D0%BB%D0%B8-%D0%B8%D0%BA%D0%BE%D0%BD%D0%BA%D0%B0-%D0%B8%D0%B7%D0%BE%D0%BB%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D0%B0%D1%8F-%D0%BD%D0%B0-%D0%B1%D0%B5%D0%BB%D0%BE%D0%BC-%D1%84%D0%BE%D0%BD%D0%B5-%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D1%8B%D0%B9-%D0%B4%D0%B8%D0%B7%D0%B0%D0%B9%D0%BD-%D0%B8-%D0%B8%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F.jpg?s=612x612&w=0&k=20&c=XtcuVJqRCSbldccojzqyfZrvT-8fa7IL4piuCKBag1I=",
       };
-      
+
       setUser(mockUser);
       setIsAuthenticated(true);
-      
-      localStorage.setItem('auth_token', 'mock_token_123');
-      localStorage.setItem('user_data', JSON.stringify(mockUser));
-      
+
+      localStorage.setItem("auth_token", "mock_token_123");
+      localStorage.setItem("user_data", JSON.stringify(mockUser));
+
       return true;
     } catch (error) {
       return false;
     }
   };
 
-  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+  const register = async (
+    email: string,
+    password: string,
+    name: string
+  ): Promise<boolean> => {
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       const mockUser: User = {
-        id: '2',
+        id: "2",
         email,
         name,
-        role: 'manager',
-        avatar: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2'
+        role: "manager",
+        avatar:
+          "https://media.istockphoto.com/id/2149116891/ru/%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D0%B0%D1%8F/%D0%BC%D1%83%D0%B6%D1%81%D0%BA%D0%BE%D0%B9-%D1%81%D0%B8%D0%BB%D1%83%D1%8D%D1%82-%D0%BB%D0%B8%D1%86%D0%B0-%D0%B8%D0%BB%D0%B8-%D0%B8%D0%BA%D0%BE%D0%BD%D0%BA%D0%B0-%D0%B8%D0%B7%D0%BE%D0%BB%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D0%B0%D1%8F-%D0%BD%D0%B0-%D0%B1%D0%B5%D0%BB%D0%BE%D0%BC-%D1%84%D0%BE%D0%BD%D0%B5-%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D1%8B%D0%B9-%D0%B4%D0%B8%D0%B7%D0%B0%D0%B9%D0%BD-%D0%B8-%D0%B8%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F.jpg?s=612x612&w=0&k=20&c=XtcuVJqRCSbldccojzqyfZrvT-8fa7IL4piuCKBag1I=",
       };
-      
+
       setUser(mockUser);
       setIsAuthenticated(true);
-      
-      localStorage.setItem('auth_token', 'mock_token_456');
-      localStorage.setItem('user_data', JSON.stringify(mockUser));
-      
+
+      localStorage.setItem("auth_token", "mock_token_456");
+      localStorage.setItem("user_data", JSON.stringify(mockUser));
+
       return true;
     } catch (error) {
       return false;
@@ -95,15 +103,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("user_data");
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated, login, logout, register }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export { AuthContext }
+export { AuthContext };

@@ -15,12 +15,12 @@ import "../styles/Setting.css";
 
 export const Settings: React.FC = () => {
   const [clinicSettings, setClinicSettings] = useState({
-    name: "Клиника Здоровья",
-    address: "г. Москва, ул. Медицинская, д. 15",
-    phone: "+7 (495) 123-45-67",
+    name: "Клиника Алдан",
+    address: "г. Кызыл, ул. Ленина, д. 60",
+    phone: "+7 (923) 317 60 60",
     email: "info@clinic-health.ru",
-    workingHours: "08:00 - 20:00",
-    website: "https://clinic-health.ru",
+    workingHours: "Пн-Пт 08-22, Сб-Вс 09-18",
+    website: " clinicaldan@mail.ru",
   });
 
   const [certificateSettings, setCertificateSettings] = useState({

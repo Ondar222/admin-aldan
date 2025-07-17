@@ -57,7 +57,7 @@ export const Login: React.FC = () => {
         <div className="login-header">
           <div className="logo-container">
             <Heart className="logo-icon" />
-            <h1 className="logo-text">Клиника Здоровья</h1>
+            <h1 className="logo-text">Клиника Алдан</h1>
           </div>
           <p className="login-subtitle">
             {isLogin ? "Вход в админ панель" : "Регистрация администратора"}
