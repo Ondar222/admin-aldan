@@ -3,6 +3,7 @@ import { Login } from "./components/Login";
 import { Dashboard } from "./components/Dashboard";
 import { PaymentSystem } from "./components/PaymentSystem";
 import { Settings } from "./components/Settings";
+import { CertificateManager } from "./components/CertificateManager";
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { useAuth } from "./hooks/useAuth";
@@ -36,6 +37,8 @@ function AppContent() {
         return <Dashboard />;
       case "payments":
         return <PaymentSystem />;
+      case "certificates":
+        return <CertificateManager />;
       case "settings":
         return <Settings />;
       default:

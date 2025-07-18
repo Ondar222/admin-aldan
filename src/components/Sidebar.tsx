@@ -5,6 +5,7 @@ import {
   CreditCard,
   Settings,
   LogOut,
+  Gift,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import "../styles/Sidebar.css";
@@ -27,6 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { id: "dashboard", label: "Панель управления", icon: LayoutDashboard },
     { id: "payments", label: "Платежи", icon: CreditCard },
+    { id: "certificates", label: "Сертификаты", icon: Gift },
     { id: "settings", label: "Настройки", icon: Settings },
   ];
 

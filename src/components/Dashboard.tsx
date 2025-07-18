@@ -43,7 +43,7 @@ export const Dashboard: React.FC = () => {
   // Mock certificates database
   const certificates: Certificate[] = [
     {
-      id: "1234567",
+      id: "123456",
       balance: 5000,
       status: "paid",
       createdAt: "2025-01-15",
@@ -75,7 +75,7 @@ export const Dashboard: React.FC = () => {
     },
     { id: "2345678", balance: 8000, status: "unpaid", createdAt: "2025-01-14" },
     {
-      id: "3456789",
+      id: "345678",
       balance: 12000,
       status: "paid",
       createdAt: "2025-01-13",
@@ -93,8 +93,8 @@ export const Dashboard: React.FC = () => {
       return;
     }
 
-    if (searchId.length !== 7 || !/^\d{7}$/.test(searchId)) {
-      setSearchError("Номер сертификата должен содержать 7 цифр");
+    if (searchId.length !== 6 || !/^\d{6}$/.test(searchId)) {
+      setSearchError("Номер сертификата должен содержать 6 цифр");
       return;
     }
 
@@ -141,9 +141,9 @@ export const Dashboard: React.FC = () => {
                   setSearchId(e.target.value.replace(/\D/g, "").slice(0, 7))
                 }
                 onKeyPress={handleKeyPress}
-                placeholder="1234567"
+                placeholder="123456"
                 className="search-input"
-                maxLength={7}
+                maxLength={6}
               />
             </div>
             <button onClick={handleSearch} className="search-button">
