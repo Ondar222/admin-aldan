@@ -12,7 +12,7 @@ declare global {
 
 export const WidgetTest: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [scriptId] = useState(`widget-test-script-${Date.now()}`);
+  const [scriptId] = useState("alfa-payment-script");
 
   useEffect(() => {
     // Cleanup function to safely remove script
@@ -40,16 +40,10 @@ export const WidgetTest: React.FC = () => {
       setIsLoaded(true);
       console.log("Alfa Bank script loaded successfully");
 
-      // Initialize widget after a short delay
+      // Let the widget initialize itself
       setTimeout(() => {
-        if (window.AlfaPayment) {
-          try {
-            window.AlfaPayment.init();
-          } catch (error) {
-            console.warn("Widget initialization error:", error);
-          }
-        }
-      }, 100);
+        console.log("Widget should be ready now");
+      }, 1000);
     };
 
     script.onerror = () => {
@@ -68,7 +62,7 @@ export const WidgetTest: React.FC = () => {
 
       <div className="widget-info">
         <p>
-          <strong>Токен:</strong> pfcr5js7415jnsqcsrms960nok
+          <strong>Токен:</strong> pfcr5js74l5jnsqcsrms960nok
         </p>
         <p>
           <strong>Режим:</strong> Тестовый
@@ -93,29 +87,31 @@ export const WidgetTest: React.FC = () => {
       {/* Alfa Bank Widget */}
       <div
         id="alfa-payment-button"
-        data-token="pfcr5js7415jnsqcsrms960nok"
+        data-token="pfcr5js74l5jnsqcsrms960nok"
         data-gateway="test"
         data-language="ru"
         data-button-text="Оплатить картой"
         data-return-url="https://yoursite.com/success"
         data-fail-url="https://yoursite.com/fail"
-        data-amount-selector=".amount"
-        data-order-number-selector=".orderNumber"
-        data-client-info-selector=".clientInfo"
-        data-email-selector=".clientEmail"
-        data-description-selector=".orderDescription"
+        data-amount="1000"
+        data-order-number="TEST-001"
+        data-client-info="Тестовый клиент"
+        data-email="test@example.com"
+        data-description="Тестовый платеж"
+        style={{
+          minHeight: "60px",
+          border: "1px solid #e5e7eb",
+          borderRadius: "8px",
+          padding: "10px",
+        }}
       />
 
       <div className="widget-actions">
         <button
           onClick={() => {
-            if (window.AlfaPayment) {
-              try {
-                window.AlfaPayment.init();
-              } catch (error) {
-                console.warn("Widget re-initialization error:", error);
-              }
-            }
+            console.log("Manual widget refresh...");
+            // Reload the page to refresh the widget
+            window.location.reload();
           }}
           className="debug-button"
         >

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -7,7 +7,9 @@ import {
   PlusCircle,
   MinusCircle,
   History,
+  ExternalLink,
 } from "lucide-react";
+import { AlfaBankWidget } from "./AlfaBankWidget";
 import "../styles/Dashboard.css";
 
 interface Certificate {
@@ -39,6 +41,19 @@ export const Dashboard: React.FC = () => {
   const [balanceOperation, setBalanceOperation] = useState<"add" | "subtract">(
     "add"
   );
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentType, setPaymentType] = useState<"activate" | "topup">(
+    "activate"
+  );
+  const [alfaBankConfig, setAlfaBankConfig] = useState<any>(null);
+
+  // Load Alfa Bank config from localStorage
+  useEffect(() => {
+    const savedConfig = localStorage.getItem("alfaBankConfig");
+    if (savedConfig) {
+      setAlfaBankConfig(JSON.parse(savedConfig));
+    }
+  }, []);
 
   // Mock certificates database
   const certificates: Certificate[] = [
@@ -115,6 +130,39 @@ export const Dashboard: React.FC = () => {
   const handleBalanceOperation = (type: "add" | "subtract") => {
     setBalanceOperation(type);
     setShowBalanceModal(true);
+  };
+
+  const handlePaymentOperation = (type: "activate" | "topup") => {
+    if (!alfaBankConfig?.token) {
+      alert(
+        "Пожалуйста, сначала настройте платежную систему в разделе 'Платежи'"
+      );
+      return;
+    }
+    setPaymentType(type);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = (paymentData: any) => {
+    console.log("Payment successful:", paymentData);
+
+    if (foundCertificate) {
+      if (paymentType === "activate") {
+        // Activate certificate
+        foundCertificate.status = "paid";
+        alert("Сертификат успешно активирован!");
+      } else if (paymentType === "topup") {
+        // Top up certificate
+        const amount = parseInt(paymentData.amount || "0");
+        foundCertificate.balance += amount;
+        alert(`Сертификат пополнен на ₽${amount.toLocaleString()}`);
+      }
+
+      // Refresh certificate display
+      handleSearch();
+    }
+
+    setShowPaymentModal(false);
   };
 
   return (
@@ -195,7 +243,10 @@ export const Dashboard: React.FC = () => {
           <div className="certificate-actions">
             <div className="action-buttons">
               {foundCertificate.status === "unpaid" && (
-                <button className="action-button activate">
+                <button
+                  onClick={() => handlePaymentOperation("activate")}
+                  className="action-button activate"
+                >
                   <CreditCard className="button-icon" />
                   <span>Активировать сертификат</span>
                 </button>
@@ -204,11 +255,19 @@ export const Dashboard: React.FC = () => {
               {foundCertificate.status === "paid" && (
                 <>
                   <button
-                    onClick={() => handleBalanceOperation("add")}
+                    onClick={() => handlePaymentOperation("topup")}
                     className="action-button add"
                   >
+                    <CreditCard className="button-icon" />
+                    <span>Пополнить через Альфа-Банк</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleBalanceOperation("add")}
+                    className="action-button add-secondary"
+                  >
                     <PlusCircle className="button-icon" />
-                    <span>Пополнить</span>
+                    <span>Пополнить вручную</span>
                   </button>
 
                   <button
@@ -298,6 +357,16 @@ export const Dashboard: React.FC = () => {
             // Refresh certificate data
             handleSearch();
           }}
+        />
+      )}
+
+      {showPaymentModal && foundCertificate && alfaBankConfig && (
+        <PaymentModal
+          certificate={foundCertificate}
+          paymentType={paymentType}
+          alfaBankConfig={alfaBankConfig}
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={handlePaymentSuccess}
         />
       )}
     </div>
@@ -565,6 +634,171 @@ const BalanceOperationModal: React.FC<BalanceOperationModalProps> = ({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+};
+
+interface PaymentModalProps {
+  certificate: Certificate;
+  paymentType: "activate" | "topup";
+  alfaBankConfig: any;
+  onClose: () => void;
+  onSuccess: (paymentData: any) => void;
+}
+
+const PaymentModal: React.FC<PaymentModalProps> = ({
+  certificate,
+  paymentType,
+  alfaBankConfig,
+  onClose,
+  onSuccess,
+}) => {
+  const [orderData, setOrderData] = useState({
+    amount: "1000", // Default amount for testing
+    orderNumber: `CERT-${certificate.id}-${Date.now()}`,
+    clientName: certificate.clientName || "Не указан",
+    clientEmail: certificate.clientEmail || "email@example.com",
+    description:
+      paymentType === "activate"
+        ? `Активация сертификата №${certificate.id}`
+        : `Пополнение сертификата №${certificate.id}`,
+  });
+
+  const handlePaymentSuccess = (paymentData: any) => {
+    onSuccess({
+      ...paymentData,
+      amount: orderData.amount,
+      certificateId: certificate.id,
+      paymentType: paymentType,
+    });
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-container large">
+        <div className="modal-header">
+          <h2 className="modal-title">
+            {paymentType === "activate"
+              ? "Активация сертификата"
+              : "Пополнение сертификата"}
+          </h2>
+          <button onClick={onClose} className="modal-close-button">
+            ✕
+          </button>
+        </div>
+
+        <div className="certificate-info">
+          <p className="certificate-id">Сертификат #{certificate.id}</p>
+          <p className="certificate-balance">
+            Текущий баланс: ₽{certificate.balance.toLocaleString()}
+          </p>
+        </div>
+
+        <div className="payment-container">
+          <div className="payment-form">
+            <h3 className="payment-title">Данные заказа</h3>
+            <div className="form-group">
+              <label className="form-label">Сумма (₽)</label>
+              <input
+                type="number"
+                value={orderData.amount}
+                onChange={(e) =>
+                  setOrderData({ ...orderData, amount: e.target.value })
+                }
+                className="form-input"
+                placeholder="1000"
+                required
+                min="1"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Номер заказа</label>
+              <input
+                type="text"
+                value={orderData.orderNumber}
+                onChange={(e) =>
+                  setOrderData({ ...orderData, orderNumber: e.target.value })
+                }
+                className="form-input"
+                placeholder="ORDER-001"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Имя клиента</label>
+              <input
+                type="text"
+                value={orderData.clientName}
+                onChange={(e) =>
+                  setOrderData({ ...orderData, clientName: e.target.value })
+                }
+                className="form-input"
+                placeholder="Иван Иванов"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Email клиента</label>
+              <input
+                type="email"
+                value={orderData.clientEmail}
+                onChange={(e) =>
+                  setOrderData({ ...orderData, clientEmail: e.target.value })
+                }
+                className="form-input"
+                placeholder="client@example.com"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Описание заказа</label>
+              <input
+                type="text"
+                value={orderData.description}
+                onChange={(e) =>
+                  setOrderData({ ...orderData, description: e.target.value })
+                }
+                className="form-input"
+                placeholder="Консультация врача"
+              />
+            </div>
+          </div>
+
+          <div className="payment-widget">
+            <h3 className="widget-title">Оплата через Альфа-Банк</h3>
+            <div className="widget-content">
+              <div className="payment-summary">
+                <p>
+                  <strong>Сертификат:</strong> #{certificate.id}
+                </p>
+                <p>
+                  <strong>Сумма:</strong> ₽
+                  {parseInt(orderData.amount || "0").toLocaleString()}
+                </p>
+                <p>
+                  <strong>Клиент:</strong>{" "}
+                  {certificate.clientName || "Не указан"}
+                </p>
+              </div>
+              <AlfaBankWidget config={alfaBankConfig} orderData={orderData} />
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-actions">
+          <button onClick={onClose} className="cancel-button">
+            Отмена
+          </button>
+          <a
+            href="#payments"
+            className="settings-link"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.hash = "payments";
+            }}
+          >
+            <ExternalLink className="button-icon" />
+            <span>Настройки платежей</span>
+          </a>
+        </div>
       </div>
     </div>
   );

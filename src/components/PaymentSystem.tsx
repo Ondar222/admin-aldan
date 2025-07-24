@@ -25,7 +25,7 @@ export const PaymentSystem: React.FC = () => {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showTestModal, setShowTestModal] = useState(false);
   const [config, setConfig] = useState<AlfaBankConfig>({
-    token: "",
+    token: "pfcr5js74l5jnsqcsrms960nok",
     gateway: "test",
     testMode: true,
     returnUrl: "",

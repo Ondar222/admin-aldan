@@ -35,7 +35,7 @@ export const AlfaBankWidget: React.FC<AlfaBankWidgetProps> = ({
 }) => {
   const widgetContainerRef = useRef<HTMLDivElement>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
-  const [scriptId] = useState(`alfa-payment-script-${Date.now()}`);
+  const [scriptId] = useState("alfa-payment-script");
 
   useEffect(() => {
     if (!config.token) return;
@@ -65,16 +65,38 @@ export const AlfaBankWidget: React.FC<AlfaBankWidgetProps> = ({
 
     script.onload = () => {
       setIsScriptLoaded(true);
-      // Initialize widget after a short delay
+      console.log("Script loaded successfully");
+
+      // Try to initialize widget after script loads
       setTimeout(() => {
-        if (window.AlfaPayment) {
-          try {
-            window.AlfaPayment.init();
-          } catch (error) {
-            console.warn("Widget initialization error:", error);
+        console.log("Attempting widget initialization...");
+
+        // Check if widget container exists
+        const widgetContainer = document.getElementById("alfa-payment-button");
+        if (widgetContainer) {
+          console.log("Widget container found:", widgetContainer);
+          console.log("Widget container HTML:", widgetContainer.innerHTML);
+
+          // Check if AlfaPayment is available
+          if (window.AlfaPayment) {
+            console.log("AlfaPayment is available, calling init()");
+            try {
+              window.AlfaPayment.init();
+              console.log("AlfaPayment.init() called successfully");
+            } catch (error) {
+              console.error("Error calling AlfaPayment.init():", error);
+            }
+          } else {
+            console.log(
+              "AlfaPayment not available, triggering DOMContentLoaded"
+            );
+            const event = new Event("DOMContentLoaded");
+            document.dispatchEvent(event);
           }
+        } else {
+          console.error("Widget container not found!");
         }
-      }, 100);
+      }, 500);
     };
 
     script.onerror = () => {
@@ -103,6 +125,24 @@ export const AlfaBankWidget: React.FC<AlfaBankWidgetProps> = ({
       <div className="widget-info">
         <h3>Платежный виджет Альфа-Банка</h3>
         <p>Нажмите кнопку ниже для тестирования платежа</p>
+        <div className="debug-info">
+          <p>
+            <strong>Токен:</strong> {config.token}
+          </p>
+          <p>
+            <strong>Сумма:</strong> ₽{orderData.amount}
+          </p>
+          <p>
+            <strong>Номер заказа:</strong> {orderData.orderNumber}
+          </p>
+          <p>
+            <strong>AlfaPayment доступен:</strong>{" "}
+            {window.AlfaPayment ? "Да" : "Нет"}
+          </p>
+          <p>
+            <strong>Скрипт загружен:</strong> {isScriptLoaded ? "Да" : "Нет"}
+          </p>
+        </div>
       </div>
 
       {/* Hidden fields for widget data */}
@@ -137,13 +177,49 @@ export const AlfaBankWidget: React.FC<AlfaBankWidgetProps> = ({
         data-button-text={config.buttonText}
         data-return-url={config.returnUrl || "https://yoursite.com/success"}
         data-fail-url={config.failUrl || "https://yoursite.com/fail"}
-        data-amount-selector=".amount"
-        data-order-number-selector=".orderNumber"
-        data-client-info-selector=".clientInfo"
-        data-email-selector=".clientEmail"
-        data-description-selector=".orderDescription"
+        data-amount={orderData.amount}
+        data-order-number={orderData.orderNumber}
+        data-client-info={orderData.clientName}
+        data-email={orderData.clientEmail}
+        data-description={orderData.description}
         className="widget-button-container"
-      />
+        style={{
+          minHeight: "60px",
+          border: "1px solid #e5e7eb",
+          borderRadius: "8px",
+          padding: "10px",
+        }}
+      >
+        {/* Loading indicator */}
+        {!isScriptLoaded && (
+          <div style={{ textAlign: "center", color: "#6b7280" }}>
+            Загрузка виджета...
+          </div>
+        )}
+
+        {/* Fallback button if widget doesn't load */}
+        {isScriptLoaded && !window.AlfaPayment && (
+          <button
+            style={{
+              backgroundColor: "#2563eb",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              padding: "12px 24px",
+              fontSize: "16px",
+              cursor: "pointer",
+              width: "100%",
+            }}
+            onClick={() => {
+              alert(
+                "Виджет Альфа-Банка не загрузился. Пожалуйста, попробуйте обновить страницу."
+              );
+            }}
+          >
+            {config.buttonText || "Оплатить картой"}
+          </button>
+        )}
+      </div>
 
       {!isScriptLoaded && (
         <div className="widget-loading">
@@ -155,15 +231,15 @@ export const AlfaBankWidget: React.FC<AlfaBankWidgetProps> = ({
       {isScriptLoaded && (
         <div className="widget-debug">
           <p>Статус: Виджет загружен</p>
+          <p>Токен: {config.token}</p>
+          <p>Сумма: {orderData.amount}</p>
+          <p>Номер заказа: {orderData.orderNumber}</p>
+          <p>AlfaPayment доступен: {window.AlfaPayment ? "Да" : "Нет"}</p>
           <button
             onClick={() => {
-              if (window.AlfaPayment) {
-                try {
-                  window.AlfaPayment.init();
-                } catch (error) {
-                  console.warn("Widget re-initialization error:", error);
-                }
-              }
+              console.log("Manual widget refresh...");
+              // Reload the page to refresh the widget
+              window.location.reload();
             }}
             className="debug-button"
           >
