@@ -1,0 +1,76 @@
+.payment-status {
+  padding: 16px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  margin: 16px 0;
+}
+
+.status-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #6c757d;
+}
+
+.status-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #dc3545;
+}
+
+.status-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.status-icon.success {
+  color: #28a745;
+}
+
+.status-icon.failed {
+  color: #dc3545;
+}
+
+.status-icon.pending {
+  color: #ffc107;
+}
+
+.status-icon.unknown {
+  color: #6c757d;
+}
+
+.status-icon.error {
+  color: #dc3545;
+}
+
+.status-text {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e9ecef;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
