@@ -234,6 +234,16 @@
   background-color: #b91c1c;
 }
 
+.action-button.add-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.action-button.add-secondary:hover {
+  background-color: #e5e7eb;
+}
+
 .button-icon {
   height: 1.25rem;
   width: 1.25rem;
@@ -386,6 +396,11 @@
   max-width: 28rem;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.modal-container.large {
+  max-width: 80rem;
+  width: 95%;
 }
 
 .modal-header {
@@ -812,5 +827,111 @@
 
   .form-actions {
     flex-direction: column;
+  }
+}
+
+/* Payment Modal Styles */
+.payment-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 1.5rem;
+}
+
+.payment-form {
+  border-right: 1px solid #e5e7eb;
+  padding-right: 1.5rem;
+}
+
+.payment-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1.5rem;
+}
+
+.payment-widget {
+  padding-left: 1.5rem;
+}
+
+.widget-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1.5rem;
+}
+
+.widget-content {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.payment-summary {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.payment-summary p {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.payment-summary strong {
+  color: #111827;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.settings-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.settings-link:hover {
+  background-color: #f0f9ff;
+  text-decoration: none;
+}
+
+/* Mobile responsive for payment modal */
+@media (max-width: 768px) {
+  .payment-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .payment-form {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding-right: 0;
+    padding-bottom: 1rem;
+  }
+
+  .payment-widget {
+    padding-left: 0;
+    padding-top: 1rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
   }
 }

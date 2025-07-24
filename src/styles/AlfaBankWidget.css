@@ -90,6 +90,36 @@
   font-size: 0.875rem;
 }
 
+.widget-debug {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.widget-debug p {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: #0369a1;
+}
+
+.debug-button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.debug-button:hover {
+  background-color: #1d4ed8;
+}
+
 /* Alfa Bank Widget Button Styles (if needed) */
 #alfa-payment-button {
   display: inline-block;
@@ -147,4 +177,25 @@
     margin-top: 1rem;
     padding-top: 1rem;
   }
+}
+
+/* Widget Test Styles */
+.widget-test-container {
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+.widget-test-container h2 {
+  margin: 0 0 1rem 0;
+  color: #111827;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.widget-actions {
+  margin-top: 1rem;
+  text-align: center;
 }

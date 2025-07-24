@@ -1,6 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../styles/AlfaBankWidget.css";
 
+// Extend Window interface for AlfaPayment
+declare global {
+  interface Window {
+    AlfaPayment?: {
+      init: () => void;
+    };
+  }
+}
+
 interface AlfaBankWidgetProps {
   config: {
     token: string;
@@ -24,19 +33,31 @@ export const AlfaBankWidget: React.FC<AlfaBankWidgetProps> = ({
   config,
   orderData,
 }) => {
-  const widgetRef = useRef<HTMLDivElement>(null);
+  const widgetContainerRef = useRef<HTMLDivElement>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [scriptId] = useState(`alfa-payment-script-${Date.now()}`);
 
   useEffect(() => {
-    // Remove existing script if any
-    const existingScript = document.getElementById("alfa-payment-script");
-    if (existingScript) {
-      existingScript.remove();
-    }
+    if (!config.token) return;
 
-    // Create and load new script
+    // Cleanup function to safely remove script
+    const cleanup = () => {
+      const existingScript = document.getElementById(scriptId);
+      if (existingScript && existingScript.parentNode) {
+        try {
+          existingScript.parentNode.removeChild(existingScript);
+        } catch (error) {
+          console.warn("Script cleanup error:", error);
+        }
+      }
+    };
+
+    // Clean up any existing script
+    cleanup();
+
+    // Create new script
     const script = document.createElement("script");
-    script.id = "alfa-payment-script";
+    script.id = scriptId;
     script.type = "text/javascript";
     script.src = config.testMode
       ? "https://testpay.alfabank.ru/assets/alfa-payment.js"
@@ -44,35 +65,41 @@ export const AlfaBankWidget: React.FC<AlfaBankWidgetProps> = ({
 
     script.onload = () => {
       setIsScriptLoaded(true);
+      // Initialize widget after a short delay
+      setTimeout(() => {
+        if (window.AlfaPayment) {
+          try {
+            window.AlfaPayment.init();
+          } catch (error) {
+            console.warn("Widget initialization error:", error);
+          }
+        }
+      }, 100);
     };
 
     script.onerror = () => {
       console.error("Failed to load Alfa Bank widget script");
     };
 
+    // Append script to head
     document.head.appendChild(script);
 
-    return () => {
-      const scriptToRemove = document.getElementById("alfa-payment-script");
-      if (scriptToRemove) {
-        scriptToRemove.remove();
-      }
-    };
-  }, [config.testMode, config.gateway]);
+    // Return cleanup function
+    return cleanup;
+  }, [config.testMode, config.gateway, config.token, scriptId]);
 
   if (!config.token) {
     return (
-      <div className="widget-error">
-        <p>
-          Токен не настроен. Пожалуйста, настройте виджет в разделе "Платежная
-          система".
-        </p>
+      <div className="alfa-widget-container">
+        <div className="widget-error">
+          <p>Токен не настроен. Перейдите в настройки платежей.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="alfa-widget-container">
+    <div className="alfa-widget-container" ref={widgetContainerRef}>
       <div className="widget-info">
         <h3>Платежный виджет Альфа-Банка</h3>
         <p>Нажмите кнопку ниже для тестирования платежа</p>
@@ -101,9 +128,8 @@ export const AlfaBankWidget: React.FC<AlfaBankWidgetProps> = ({
         value={orderData.description}
       />
 
-      {/* Alfa Bank Widget */}
+      {/* Alfa Bank Widget Container */}
       <div
-        ref={widgetRef}
         id="alfa-payment-button"
         data-token={config.token}
         data-gateway={config.gateway}
@@ -117,12 +143,32 @@ export const AlfaBankWidget: React.FC<AlfaBankWidgetProps> = ({
         data-email-selector=".clientEmail"
         data-description-selector=".orderDescription"
         className="widget-button-container"
-      ></div>
+      />
 
       {!isScriptLoaded && (
         <div className="widget-loading">
           <div className="loading-spinner"></div>
           <p>Загрузка виджета...</p>
+        </div>
+      )}
+
+      {isScriptLoaded && (
+        <div className="widget-debug">
+          <p>Статус: Виджет загружен</p>
+          <button
+            onClick={() => {
+              if (window.AlfaPayment) {
+                try {
+                  window.AlfaPayment.init();
+                } catch (error) {
+                  console.warn("Widget re-initialization error:", error);
+                }
+              }
+            }}
+            className="debug-button"
+          >
+            Обновить виджет
+          </button>
         </div>
       )}
 

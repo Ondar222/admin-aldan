@@ -8,6 +8,7 @@ import {
   Check,
 } from "lucide-react";
 import { AlfaBankWidget } from "./AlfaBankWidget";
+import { WidgetTest } from "./WidgetTest";
 import "../styles/PaymentSystem.css";
 
 interface AlfaBankConfig {
@@ -109,6 +110,14 @@ export const PaymentSystem: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Quick Test Widget */}
+      {config.token && (
+        <div className="quick-test-card">
+          <h3>Быстрый тест виджета</h3>
+          <WidgetTest />
+        </div>
+      )}
 
       {/* Configuration Modal */}
       {showConfigModal && (

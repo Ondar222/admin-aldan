@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   CertificateGenerator,
   sendCertificateByEmail,
   downloadCertificate,
 } from "../utils/certificateGenerator";
 import { CertificatePreview } from "./CertificatePreview";
+import { AlfaBankWidget } from "./AlfaBankWidget";
+import { ExternalLink } from "lucide-react";
 import "../styles/CertificateManager.css";
 
 interface Certificate {
@@ -28,6 +30,16 @@ export const CertificateManager: React.FC = () => {
   const [sendType, setSendType] = useState<"self" | "other">("self");
   const [searchNumber, setSearchNumber] = useState("");
   const [searchResult, setSearchResult] = useState<Certificate | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [alfaBankConfig, setAlfaBankConfig] = useState<any>(null);
+
+  // Load Alfa Bank config from localStorage
+  useEffect(() => {
+    const savedConfig = localStorage.getItem("alfaBankConfig");
+    if (savedConfig) {
+      setAlfaBankConfig(JSON.parse(savedConfig));
+    }
+  }, []);
 
   // Form states for buying certificate
   const [buyerName, setBuyerName] = useState("");
@@ -272,6 +284,230 @@ export const CertificateManager: React.FC = () => {
     }
   };
 
+  const handlePaymentSuccess = (paymentData: any) => {
+    console.log("Payment successful:", paymentData);
+
+    // Create certificate after successful payment
+    if (pendingCertificate) {
+      const newCertificate = {
+        ...pendingCertificate,
+        id: Date.now().toString(),
+        number: generateCertificateNumber(),
+        createdAt: new Date(),
+      };
+
+      setCertificates((prev) => [newCertificate, ...prev]);
+      setPendingCertificate(null);
+      setShowPaymentModal(false);
+
+      // Generate and send certificate
+      generateAndSendCertificate(newCertificate);
+
+      alert(`Сертификат успешно создан! Номер: ${newCertificate.number}`);
+    }
+  };
+
+  const initiatePayment = () => {
+    if (!alfaBankConfig?.token) {
+      alert("Сначала настройте платежную систему в разделе 'Платежи'");
+      return;
+    }
+
+    if (!isFormValid()) {
+      alert("Пожалуйста, заполните все обязательные поля");
+      return;
+    }
+
+    // Create pending certificate
+    const pendingCert: Certificate = {
+      id: "pending",
+      number: generateCertificateNumber(),
+      amount: parseInt(amount),
+      status: "active",
+      buyerName,
+      buyerPhone,
+      buyerEmail,
+      recipientName: sendType === "other" ? recipientName : undefined,
+      recipientPhone: sendType === "other" ? recipientPhone : undefined,
+      recipientEmail: sendType === "other" ? recipientEmail : undefined,
+      message,
+      createdAt: new Date(),
+      usedAmount: 0,
+    };
+
+    setPendingCertificate(pendingCert);
+    setShowPaymentModal(true);
+  };
+
+  interface CertificatePaymentModalProps {
+    certificate: Certificate;
+    alfaBankConfig: any;
+    onClose: () => void;
+    onSuccess: (paymentData: any) => void;
+  }
+
+  const CertificatePaymentModal: React.FC<CertificatePaymentModalProps> = ({
+    certificate,
+    alfaBankConfig,
+    onClose,
+    onSuccess,
+  }) => {
+    const [orderData, setOrderData] = useState({
+      amount: certificate.amount.toString(),
+      orderNumber: `CERT-${certificate.number}-${Date.now()}`,
+      clientName: certificate.buyerName,
+      clientEmail: certificate.buyerEmail,
+      description: `Покупка сертификата №${certificate.number}`,
+    });
+
+    const handlePaymentSuccess = (paymentData: any) => {
+      onSuccess({
+        ...paymentData,
+        amount: orderData.amount,
+        certificateNumber: certificate.number,
+        buyerName: certificate.buyerName,
+      });
+    };
+
+    return (
+      <div className="modal-overlay">
+        <div className="modal-container large">
+          <div className="modal-header">
+            <h2 className="modal-title">Оплата сертификата</h2>
+            <button onClick={onClose} className="modal-close-button">
+              ✕
+            </button>
+          </div>
+
+          <div className="certificate-info">
+            <p className="certificate-id">Сертификат №{certificate.number}</p>
+            <p className="certificate-balance">
+              Сумма: ₽{certificate.amount.toLocaleString()}
+            </p>
+          </div>
+
+          <div className="payment-container">
+            <div className="payment-form">
+              <h3 className="payment-title">Данные заказа</h3>
+
+              <div className="form-group">
+                <label className="form-label">Сумма (₽)</label>
+                <input
+                  type="number"
+                  value={orderData.amount}
+                  onChange={(e) =>
+                    setOrderData({ ...orderData, amount: e.target.value })
+                  }
+                  className="form-input"
+                  placeholder="1000"
+                  required
+                  min="1"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Номер заказа</label>
+                <input
+                  type="text"
+                  value={orderData.orderNumber}
+                  onChange={(e) =>
+                    setOrderData({ ...orderData, orderNumber: e.target.value })
+                  }
+                  className="form-input"
+                  placeholder="ORDER-001"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Имя покупателя</label>
+                <input
+                  type="text"
+                  value={orderData.clientName}
+                  onChange={(e) =>
+                    setOrderData({ ...orderData, clientName: e.target.value })
+                  }
+                  className="form-input"
+                  placeholder="Иван Иванов"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Email покупателя</label>
+                <input
+                  type="email"
+                  value={orderData.clientEmail}
+                  onChange={(e) =>
+                    setOrderData({ ...orderData, clientEmail: e.target.value })
+                  }
+                  className="form-input"
+                  placeholder="client@example.com"
+                />
+              </div>
+
+              <div className="certificate-details">
+                <h4>Детали сертификата</h4>
+                <p>
+                  <strong>Покупатель:</strong> {certificate.buyerName}
+                </p>
+                <p>
+                  <strong>Телефон:</strong> {certificate.buyerPhone}
+                </p>
+                {certificate.recipientName && (
+                  <p>
+                    <strong>Получатель:</strong> {certificate.recipientName}
+                  </p>
+                )}
+                {certificate.message && (
+                  <p>
+                    <strong>Сообщение:</strong> {certificate.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="payment-widget">
+              <h3 className="widget-title">Оплата через Альфа-Банк</h3>
+              <div className="widget-content">
+                <div className="payment-summary">
+                  <p>
+                    <strong>Сертификат:</strong> №{certificate.number}
+                  </p>
+                  <p>
+                    <strong>Сумма:</strong> ₽
+                    {parseInt(orderData.amount || "0").toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Покупатель:</strong> {certificate.buyerName}
+                  </p>
+                </div>
+
+                <AlfaBankWidget config={alfaBankConfig} orderData={orderData} />
+              </div>
+            </div>
+          </div>
+
+          <div className="modal-actions">
+            <button onClick={onClose} className="cancel-button">
+              Отмена
+            </button>
+            <a
+              href="#payments"
+              className="settings-link"
+              onClick={(e) => {
+                e.preventDefault();
+                // Navigate to payments page
+                window.location.hash = "payments";
+              }}
+            >
+              <ExternalLink className="button-icon" />
+              <span>Настройки платежей</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="certificate-manager">
       <div className="certificate-tabs">
@@ -403,9 +639,10 @@ export const CertificateManager: React.FC = () => {
             </div>
 
             <button
-              type="submit"
+              type="button"
               className="pay-button"
               disabled={!isFormValid()}
+              onClick={initiatePayment}
             >
               Оплатить
             </button>
@@ -568,6 +805,19 @@ export const CertificateManager: React.FC = () => {
             setPendingCertificate(null);
           }}
           onConfirm={confirmCertificate}
+        />
+      )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && pendingCertificate && alfaBankConfig && (
+        <CertificatePaymentModal
+          certificate={pendingCertificate}
+          alfaBankConfig={alfaBankConfig}
+          onClose={() => {
+            setShowPaymentModal(false);
+            setPendingCertificate(null);
+          }}
+          onSuccess={handlePaymentSuccess}
         />
       )}
     </div>
