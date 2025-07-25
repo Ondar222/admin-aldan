@@ -2,6 +2,16 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "env": {
+    "VITE_API_URL": "/api",
+    "NODE_ENV": "production",
+    "FRONTEND_URL": "https://admin-aldan-mihrggpyf-ondar222s-projects.vercel.app",
+    "JWT_SECRET": "your-super-secret-jwt-key-change-this",
+    "DB_PATH": "./database/certificates.db",
+    "ADMIN_USERNAME": "admin",
+    "ADMIN_PASSWORD": "admin123",
+    "ADMIN_EMAIL": "admin@clinic.com"
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",

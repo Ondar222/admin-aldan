@@ -6,14 +6,15 @@
 
 ## Решение (Обновлено)
 
-### 1. Автоматическое развертывание с API роутом
+### 1. Автоматическое развертывание с API роутами
 
-Проект теперь настроен для автоматического развертывания на Vercel с встроенным API роутом.
+Проект теперь настроен для автоматического развертывания на Vercel с встроенными API роутами.
 
 1. Загрузите весь проект на Vercel
 2. В настройках проекта добавьте переменные окружения:
 
 ```env
+VITE_API_URL=/api
 NODE_ENV=production
 FRONTEND_URL=https://your-domain.vercel.app
 JWT_SECRET=your-super-secret-jwt-key
@@ -21,7 +22,6 @@ DB_PATH=./database/certificates.db
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
 ADMIN_EMAIL=admin@clinic.com
-VITE_API_URL=/api
 ```
 
 ### 2. Структура проекта
@@ -29,15 +29,24 @@ VITE_API_URL=/api
 ```
 admin-aldan/
 ├── api/
-│   ├── server.js          # API роут для Vercel
-│   └── package.json       # Зависимости для API
-├── backend/               # Локальный бэкенд для разработки
-├── src/                   # Фронтенд
-├── vercel.json           # Конфигурация Vercel
-└── package.json          # Зависимости фронтенда
+│   ├── health.js              # Health check
+│   ├── auth/
+│   │   └── login.js           # Аутентификация
+│   └── certificates/
+│       └── index.js           # Список сертификатов
+├── backend/                   # Локальный бэкенд для разработки
+├── src/                       # Фронтенд
+├── vercel.json               # Конфигурация Vercel
+└── package.json              # Зависимости фронтенда
 ```
 
-### 3. Проверка работоспособности
+### 3. API роуты
+
+- `GET /api/health` - проверка состояния API
+- `POST /api/auth/login` - аутентификация
+- `GET /api/certificates` - список сертификатов
+
+### 4. Проверка работоспособности
 
 После развертывания проверьте:
 
@@ -64,14 +73,3 @@ npm run dev
 
 - `VITE_API_URL=http://localhost:3001/api`
 - `FRONTEND_URL=http://localhost:5176`
-
-## Альтернативное решение - отдельный бэкенд
-
-Если хотите развернуть бэкенд отдельно:
-
-1. Создайте новый проект на Vercel для бэкенда
-2. Загрузите папку `backend/`
-3. В настройках фронтенд проекта добавьте переменную:
-   ```
-   VITE_API_URL=https://your-backend-domain.vercel.app/api
-   ```
