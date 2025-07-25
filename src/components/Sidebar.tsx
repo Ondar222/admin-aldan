@@ -9,6 +9,7 @@ import {
   Code,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useAuth as useAuthContext } from "../contexts/AuthContext";
 import "../styles/Sidebar.css";
 
 interface SidebarProps {
@@ -25,12 +26,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setIsMobileMenuOpen,
 }) => {
   const { logout } = useAuth();
+  const { user } = useAuthContext();
 
   const menuItems = [
     { id: "dashboard", label: "Панель управления", icon: LayoutDashboard },
-    { id: "payments", label: "Платежи", icon: CreditCard },
+    ...(user?.role === "admin"
+      ? [{ id: "payments", label: "Платежи", icon: CreditCard }]
+      : []),
     { id: "certificates", label: "Сертификаты", icon: Gift },
-    { id: "widget-test", label: "Виджет", icon: Code },
+    ...(user?.role === "admin"
+      ? [{ id: "widget-test", label: "Виджет", icon: Code }]
+      : []),
     { id: "settings", label: "Настройки", icon: Settings },
   ];
 

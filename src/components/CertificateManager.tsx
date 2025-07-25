@@ -77,19 +77,19 @@ export const CertificateManager: React.FC = () => {
     useState<Certificate | null>(null);
 
   const generateCertificateNumber = (): string => {
-    // Генерируем ровно 6 цифр
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    // Генерируем ровно 7 цифр
+    return Math.floor(1000000 + Math.random() * 9000000).toString();
   };
 
-  // Проверка, что номер состоит из 6 цифр
+  // Проверка, что номер состоит из 7 цифр
   const isValidCertificateNumber = (number: string): boolean => {
-    return /^\d{6}$/.test(number);
+    return /^\d{7}$/.test(number);
   };
 
-  // Форматирование номера для отображения (всегда 6 цифр)
+  // Форматирование номера для отображения (всегда 7 цифр)
   const formatCertificateNumber = (number: string): string => {
     const cleanNumber = number.replace(/\D/g, "");
-    return cleanNumber.padStart(6, "0");
+    return cleanNumber.padStart(7, "0");
   };
 
   const createCertificate = async (certificateData: Certificate) => {
@@ -186,7 +186,7 @@ export const CertificateManager: React.FC = () => {
 
   const searchCertificate = async () => {
     if (!isValidCertificateNumber(searchNumber)) {
-      alert("Номер сертификата должен состоять из 6 цифр");
+      alert("Номер сертификата должен состоять из 7 цифр");
       return;
     }
 
@@ -330,6 +330,13 @@ export const CertificateManager: React.FC = () => {
         <p>
           <strong>Пользователь:</strong> {user?.name}
         </p>
+        {user?.role !== "admin" && (
+          <p style={{ color: "#6b7280", fontSize: "14px", marginTop: "10px" }}>
+            Как менеджер, вы можете только просматривать и проверять
+            сертификаты. Создание и управление сертификатами доступно только
+            супер администраторам.
+          </p>
+        )}
       </div>
       <div className="certificate-tabs">
         {user?.role === "admin" && (
@@ -476,29 +483,33 @@ export const CertificateManager: React.FC = () => {
       {activeTab === "verify" && (
         <div className="certificate-verify">
           <div className="search-section">
-            <h3>Проверка сертификата</h3>
+            <h3>
+              {user?.role === "admin"
+                ? "Проверка сертификата"
+                : "Проверка сертификата (только просмотр)"}
+            </h3>
             <div className="search-form">
               <div className="search-input-container">
                 <Search className="search-icon" />
                 <input
                   type="text"
-                  placeholder="Введите номер сертификата (6 цифр)"
+                  placeholder="Введите номер сертификата (7 цифр)"
                   value={searchNumber}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, "");
                     setSearchNumber(value);
                   }}
-                  maxLength={6}
-                  pattern="[0-9]{6}"
+                  maxLength={7}
+                  pattern="[0-9]{7}"
                   className={
-                    searchNumber.length > 0 && searchNumber.length < 6
+                    searchNumber.length > 0 && searchNumber.length < 7
                       ? "input-warning"
                       : ""
                   }
                 />
                 <button
                   onClick={searchCertificate}
-                  disabled={searchNumber.length !== 6 || searchLoading}
+                  disabled={searchNumber.length !== 7 || searchLoading}
                   className="search-button"
                 >
                   {searchLoading ? (
@@ -508,8 +519,8 @@ export const CertificateManager: React.FC = () => {
                   )}
                 </button>
               </div>
-              {searchNumber.length > 0 && searchNumber.length < 6 && (
-                <div className="search-hint">Введите ровно 6 цифр</div>
+              {searchNumber.length > 0 && searchNumber.length < 7 && (
+                <div className="search-hint">Введите ровно 7 цифр</div>
               )}
             </div>
           </div>

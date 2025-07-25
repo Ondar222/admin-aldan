@@ -53,9 +53,9 @@ export class CertificateGenerator {
       this.ctx.textAlign = 'center';
       this.ctx.fillStyle = '#000000';
       
-      // Добавляем номер сертификата (6-значный)
+      // Добавляем номер сертификата (7-значный)
       this.ctx.font = 'bold 48px Arial';
-      this.ctx.fillText(`№ ${data.number.padStart(6, '0')}`, this.canvas.width / 2, 200);
+      this.ctx.fillText(`№ ${data.number.padStart(7, '0')}`, this.canvas.width / 2, 200);
       
       // Добавляем сумму
       this.ctx.font = 'bold 36px Arial';

@@ -95,7 +95,7 @@ db.serialize(() => {
   // Insert sample certificates
   const sampleCertificates = [
     {
-      id: "123456",
+      id: "1234567",
       balance: 5000,
       status: "paid",
       client_name: "Иванов И.И.",
@@ -103,7 +103,7 @@ db.serialize(() => {
       client_phone: "+79001234567",
     },
     {
-      id: "234567",
+      id: "2345678",
       balance: 8000,
       status: "unpaid",
       client_name: "Петрова А.С.",
@@ -111,7 +111,7 @@ db.serialize(() => {
       client_phone: "+79001234568",
     },
     {
-      id: "345678",
+      id: "3456789",
       balance: 12000,
       status: "paid",
       client_name: "Сидоров В.П.",
@@ -141,21 +141,21 @@ db.serialize(() => {
   const sampleTransactions = [
     {
       id: "1",
-      certificate_id: "123456",
+      certificate_id: "1234567",
       type: "create",
       amount: 5000,
       description: "Создание сертификата",
     },
     {
       id: "2",
-      certificate_id: "123456",
+      certificate_id: "1234567",
       type: "subtract",
       amount: 1500,
       description: "Оплата услуг",
     },
     {
       id: "3",
-      certificate_id: "123456",
+      certificate_id: "1234567",
       type: "add",
       amount: 2000,
       description: "Пополнение баланса",

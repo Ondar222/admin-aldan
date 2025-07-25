@@ -10,6 +10,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { AlfaBankWidget } from "./AlfaBankWidget";
+import { useAuth } from "../contexts/AuthContext";
 import "../styles/Dashboard.css";
 
 interface Certificate {
@@ -31,6 +32,7 @@ interface Transaction {
 }
 
 export const Dashboard: React.FC = () => {
+  const { user } = useAuth();
   const [searchId, setSearchId] = useState("");
   const [foundCertificate, setFoundCertificate] = useState<Certificate | null>(
     null
@@ -58,7 +60,7 @@ export const Dashboard: React.FC = () => {
   // Mock certificates database
   const certificates: Certificate[] = [
     {
-      id: "123456",
+      id: "1234567",
       balance: 5000,
       status: "paid",
       createdAt: "2025-01-15",
@@ -90,7 +92,7 @@ export const Dashboard: React.FC = () => {
     },
     { id: "2345678", balance: 8000, status: "unpaid", createdAt: "2025-01-14" },
     {
-      id: "345678",
+      id: "3456789",
       balance: 12000,
       status: "paid",
       createdAt: "2025-01-13",
@@ -108,8 +110,8 @@ export const Dashboard: React.FC = () => {
       return;
     }
 
-    if (searchId.length !== 6 || !/^\d{6}$/.test(searchId)) {
-      setSearchError("Номер сертификата должен содержать 6 цифр");
+    if (searchId.length !== 7 || !/^\d{7}$/.test(searchId)) {
+      setSearchError("Номер сертификата должен содержать 7 цифр");
       return;
     }
 
@@ -173,6 +175,20 @@ export const Dashboard: React.FC = () => {
           Сертификаты для оплаты медицинских услуг. Поиск, создание и управление
           балансом
         </p>
+        {user?.role !== "admin" && (
+          <p
+            style={{
+              color: "#6b7280",
+              fontSize: "14px",
+              marginTop: "10px",
+              textAlign: "center",
+            }}
+          >
+            Как менеджер, вы можете только просматривать и проверять
+            сертификаты. Создание и управление сертификатами доступно только
+            супер администраторам.
+          </p>
+        )}
       </div>
 
       {/* Search Section */}
@@ -189,9 +205,9 @@ export const Dashboard: React.FC = () => {
                   setSearchId(e.target.value.replace(/\D/g, "").slice(0, 7))
                 }
                 onKeyPress={handleKeyPress}
-                placeholder="123456"
+                placeholder="1234567"
                 className="search-input"
-                maxLength={6}
+                maxLength={7}
               />
             </div>
             <button onClick={handleSearch} className="search-button">
@@ -242,17 +258,18 @@ export const Dashboard: React.FC = () => {
 
           <div className="certificate-actions">
             <div className="action-buttons">
-              {foundCertificate.status === "unpaid" && (
-                <button
-                  onClick={() => handlePaymentOperation("activate")}
-                  className="action-button activate"
-                >
-                  <CreditCard className="button-icon" />
-                  <span>Активировать сертификат</span>
-                </button>
-              )}
+              {foundCertificate.status === "unpaid" &&
+                user?.role === "admin" && (
+                  <button
+                    onClick={() => handlePaymentOperation("activate")}
+                    className="action-button activate"
+                  >
+                    <CreditCard className="button-icon" />
+                    <span>Активировать сертификат</span>
+                  </button>
+                )}
 
-              {foundCertificate.status === "paid" && (
+              {foundCertificate.status === "paid" && user?.role === "admin" && (
                 <>
                   <button
                     onClick={() => handlePaymentOperation("topup")}
@@ -332,15 +349,17 @@ export const Dashboard: React.FC = () => {
       )}
 
       {/* Создать новый сертификат */}
-      <div className="create-certificate-container">
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="create-certificate-button"
-        >
-          <Plus className="create-icon" />
-          <span>Создать новый сертификат</span>
-        </button>
-      </div>
+      {user?.role === "admin" && (
+        <div className="create-certificate-container">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="create-certificate-button"
+          >
+            <Plus className="create-icon" />
+            <span>Создать новый сертификат</span>
+          </button>
+        </div>
+      )}
 
       {/* Modals */}
       {showCreateModal && (

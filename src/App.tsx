@@ -8,11 +8,13 @@ import { CertificateWidgetTest } from "./components/CertificateWidgetTest";
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { useAuth } from "./hooks/useAuth";
+import { useAuth as useAuthContext } from "./contexts/AuthContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./styles/App.css";
 
 function AppContent() {
   const { user, isAuthenticated } = useAuth();
+  const { user: authUser } = useAuthContext();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -28,6 +30,20 @@ function AppContent() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Redirect managers away from widget-test tab
+  useEffect(() => {
+    if (activeTab === "widget-test" && authUser?.role !== "admin") {
+      setActiveTab("dashboard");
+    }
+  }, [activeTab, authUser?.role]);
+
+  // Redirect managers away from payments tab
+  useEffect(() => {
+    if (activeTab === "payments" && authUser?.role !== "admin") {
+      setActiveTab("dashboard");
+    }
+  }, [activeTab, authUser?.role]);
+
   if (!isAuthenticated) {
     return <Login />;
   }
@@ -37,11 +53,25 @@ function AppContent() {
       case "dashboard":
         return <Dashboard />;
       case "payments":
-        return <PaymentSystem />;
+        // Показываем платежи только супер админам
+        if (authUser?.role === "admin") {
+          return <PaymentSystem />;
+        } else {
+          // Если менеджер попытается перейти к платежам, перенаправляем на dashboard
+          setActiveTab("dashboard");
+          return <Dashboard />;
+        }
       case "certificates":
         return <CertificateManager />;
       case "widget-test":
-        return <CertificateWidgetTest />;
+        // Показываем виджет только супер админам
+        if (authUser?.role === "admin") {
+          return <CertificateWidgetTest />;
+        } else {
+          // Если менеджер попытается перейти к виджету, перенаправляем на dashboard
+          setActiveTab("dashboard");
+          return <Dashboard />;
+        }
       case "settings":
         return <Settings />;
       default:

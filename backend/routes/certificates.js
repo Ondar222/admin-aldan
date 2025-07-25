@@ -80,9 +80,9 @@ router.post(
 
       const { balance, client_name, client_email, client_phone } = req.body;
 
-      // Generate unique certificate ID
+      // Generate unique certificate ID (7 digits)
       const certificateId = Math.floor(
-        100000 + Math.random() * 900000
+        1000000 + Math.random() * 9000000
       ).toString();
 
       // Create certificate
@@ -106,8 +106,7 @@ router.post(
       // Get created certificate
       const certificate = await db.getCertificate(certificateId);
 
-      // Send notifications
-      await smsService.sendCertificateCreated(certificate);
+      // Send email notification
       await emailService.sendCertificateCreated(certificate);
 
       res.status(201).json({

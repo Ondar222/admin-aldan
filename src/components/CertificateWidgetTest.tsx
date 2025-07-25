@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { CertificateWidget } from "./CertificateWidget";
 import { Settings, Code, Eye } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 import "../styles/CertificateWidgetTest.css";
 
 export const CertificateWidgetTest: React.FC = () => {
+  const { user } = useAuth();
   const [config, setConfig] = useState({
     title: "Подарочный сертификат",
     subtitle: "Клиника Алдан",
@@ -68,126 +70,156 @@ export const CertificateWidgetTest: React.FC = () => {
       <div className="test-header">
         <h1>Тест виджета покупки сертификатов</h1>
         <p>Настройте и протестируйте виджет для встраивания на внешние сайты</p>
+        <div className="user-role-info">
+          <p>
+            <strong>Роль:</strong>{" "}
+            {user?.role === "admin" ? "Супер Админ" : "Менеджер"}
+          </p>
+          <p>
+            <strong>Пользователь:</strong> {user?.name}
+          </p>
+        </div>
       </div>
 
       <div className="test-container">
         <div className="test-sidebar">
-          <div className="sidebar-section">
-            <button
-              onClick={() => setShowConfig(!showConfig)}
-              className="config-toggle"
-            >
-              <Settings className="icon" />
-              {showConfig ? "Скрыть настройки" : "Показать настройки"}
-            </button>
+          {user?.role === "admin" ? (
+            <>
+              <div className="sidebar-section">
+                <button
+                  onClick={() => setShowConfig(!showConfig)}
+                  className="config-toggle"
+                >
+                  <Settings className="icon" />
+                  {showConfig ? "Скрыть настройки" : "Показать настройки"}
+                </button>
 
-            {showConfig && (
-              <div className="config-panel">
-                <h3>Настройки виджета</h3>
+                {showConfig && (
+                  <div className="config-panel">
+                    <h3>Настройки виджета</h3>
 
-                <div className="config-group">
-                  <label>Заголовок</label>
-                  <input
-                    type="text"
-                    value={config.title}
-                    onChange={(e) =>
-                      setConfig({ ...config, title: e.target.value })
-                    }
-                  />
+                    <div className="config-group">
+                      <label>Заголовок</label>
+                      <input
+                        type="text"
+                        value={config.title}
+                        onChange={(e) =>
+                          setConfig({ ...config, title: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="config-group">
+                      <label>Подзаголовок</label>
+                      <input
+                        type="text"
+                        value={config.subtitle}
+                        onChange={(e) =>
+                          setConfig({ ...config, subtitle: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="config-group">
+                      <label>Логотип (эмодзи или текст)</label>
+                      <input
+                        type="text"
+                        value={config.logo}
+                        onChange={(e) =>
+                          setConfig({ ...config, logo: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="config-group">
+                      <label>Основной цвет</label>
+                      <input
+                        type="color"
+                        value={config.primaryColor}
+                        onChange={(e) =>
+                          setConfig({ ...config, primaryColor: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="config-group">
+                      <label>Цвет фона</label>
+                      <input
+                        type="color"
+                        value={config.backgroundColor}
+                        onChange={(e) =>
+                          setConfig({
+                            ...config,
+                            backgroundColor: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="config-group">
+                      <label>API URL</label>
+                      <input
+                        type="text"
+                        value={apiUrl}
+                        onChange={(e) => setApiUrl(e.target.value)}
+                        placeholder="http://localhost:3001/api"
+                      />
+                    </div>
+
+                    <div className="config-group">
+                      <label>Токен авторизации (опционально)</label>
+                      <input
+                        type="text"
+                        value={token}
+                        onChange={(e) => setToken(e.target.value)}
+                        placeholder="Bearer token"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="sidebar-section">
+                <h3>Код для встраивания</h3>
+
+                <div className="code-tabs">
+                  <button className="tab-button active">Iframe</button>
+                  <button className="tab-button">JavaScript</button>
                 </div>
 
-                <div className="config-group">
-                  <label>Подзаголовок</label>
-                  <input
-                    type="text"
-                    value={config.subtitle}
-                    onChange={(e) =>
-                      setConfig({ ...config, subtitle: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="config-group">
-                  <label>Логотип (эмодзи или текст)</label>
-                  <input
-                    type="text"
-                    value={config.logo}
-                    onChange={(e) =>
-                      setConfig({ ...config, logo: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="config-group">
-                  <label>Основной цвет</label>
-                  <input
-                    type="color"
-                    value={config.primaryColor}
-                    onChange={(e) =>
-                      setConfig({ ...config, primaryColor: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="config-group">
-                  <label>Цвет фона</label>
-                  <input
-                    type="color"
-                    value={config.backgroundColor}
-                    onChange={(e) =>
-                      setConfig({ ...config, backgroundColor: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="config-group">
-                  <label>API URL</label>
-                  <input
-                    type="text"
-                    value={apiUrl}
-                    onChange={(e) => setApiUrl(e.target.value)}
-                    placeholder="http://localhost:3001/api"
-                  />
-                </div>
-
-                <div className="config-group">
-                  <label>Токен авторизации (опционально)</label>
-                  <input
-                    type="text"
-                    value={token}
-                    onChange={(e) => setToken(e.target.value)}
-                    placeholder="Bearer token"
-                  />
+                <div className="code-container">
+                  <div className="code-header">
+                    <span>Код для вставки</span>
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(generateEmbedCode())
+                      }
+                      className="copy-button"
+                    >
+                      Копировать
+                    </button>
+                  </div>
+                  <pre className="code-block">
+                    <code>{generateEmbedCode()}</code>
+                  </pre>
                 </div>
               </div>
-            )}
-
+            </>
+          ) : (
             <div className="sidebar-section">
-              <h3>Код для встраивания</h3>
-
-              <div className="code-tabs">
-                <button className="tab-button active">Iframe</button>
-                <button className="tab-button">JavaScript</button>
-              </div>
-
-              <div className="code-container">
-                <div className="code-header">
-                  <span>Код для вставки</span>
-                  <button
-                    onClick={() =>
-                      navigator.clipboard.writeText(generateEmbedCode())
-                    }
-                    className="copy-button"
-                  >
-                    Копировать
-                  </button>
-                </div>
-                <pre className="code-block">
-                  <code>{generateEmbedCode()}</code>
-                </pre>
-              </div>
+              <h3>Ограниченный доступ</h3>
+              <p
+                style={{
+                  color: "#6b7280",
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                }}
+              >
+                Как менеджер, вы можете только просматривать виджет. Настройки и
+                код для встраивания доступны только супер администраторам.
+              </p>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="test-main">
