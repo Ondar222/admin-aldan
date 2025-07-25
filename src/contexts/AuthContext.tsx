@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { apiService } from "../services/api";
 
 interface User {
   id: string;
@@ -43,46 +44,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (
+    username: string,
+    password: string
+  ): Promise<boolean> => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await apiService.login(username, password);
 
-      // Проверяем тестовые аккаунты
-      let mockUser: User | null = null;
+      if (response.success && response.user) {
+        const userData: User = {
+          id: response.user.id || "1",
+          email: response.user.email || "",
+          name: response.user.username || "",
+          role: response.user.role || "manager",
+          avatar:
+            "https://media.istockphoto.com/id/2149116891/ru/%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D0%B0%D1%8F/%D0%BC%D1%83%D0%B6%D1%81%D0%BA%D0%BE%D0%B9-%D1%81%D0%B8%D0%BB%D1%83%D1%8D%D1%82-%D0%BB%D0%B8%D1%86%D0%B0-%D0%BB%D0%B8-%D0%B8%D0%BA%D0%BE%D0%BD%D0%BA%D0%B0-%D0%B8%D0%B7%D0%BE%D0%BB%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D0%B0%D1%8F-%D0%BD%D0%B0-%D0%B1%D0%B5%D0%BB%D0%BE%D0%BC-%D1%84%D0%BE%D0%BD%D0%B5-%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D1%8B%D0%B9-%D0%B4%D0%B8%D0%B7%D0%B0%D0%B9%D0%BD-%D0%B8-%D0%B8%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F.jpg?s=612x612&w=0&k=20&c=XtcuVJqRCSbldccojzqyfZrvT-8fa7IL4piuCKBag1I=",
+        };
 
-      if (email === "admin" && password === "admin123") {
-        mockUser = {
-          id: "1",
-          email: "admin@clinic.com",
-          name: "Супер Админ",
-          role: "admin",
-          avatar:
-            "https://media.istockphoto.com/id/2149116891/ru/%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D0%B0%D1%8F/%D0%BC%D1%83%D0%B6%D1%81%D0%BA%D0%BE%D0%B9-%D1%81%D0%B8%D0%BB%D1%83%D1%8D%D1%82-%D0%BB%D0%B8%D1%86%D0%B0-%D0%B8%D0%BB%D0%B8-%D0%B8%D0%BA%D0%BE%D0%BD%D0%BA%D0%B0-%D0%B8%D0%B7%D0%BE%D0%BB%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D0%B0%D1%8F-%D0%BD%D0%B0-%D0%B1%D0%B5%D0%BB%D0%BE%D0%BC-%D1%84%D0%BE%D0%BD%D0%B5-%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D1%8B%D0%B9-%D0%B4%D0%B8%D0%B7%D0%B0%D0%B9%D0%BD-%D0%B8-%D0%B8%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F.jpg?s=612x612&w=0&k=20&c=XtcuVJqRCSbldccojzqyfZrvT-8fa7IL4piuCKBag1I=",
-        };
-      } else if (email === "manager1" && password === "manager123") {
-        mockUser = {
-          id: "2",
-          email: "manager@clinic.com",
-          name: "Менеджер",
-          role: "manager",
-          avatar:
-            "https://media.istockphoto.com/id/2149116891/ru/%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D0%B0%D1%8F/%D0%BC%D1%83%D0%B6%D1%81%D0%BA%D0%BE%D0%B9-%D1%81%D0%B8%D0%BB%D1%83%D1%8D%D1%82-%D0%BB%D0%B8%D1%86%D0%B0-%D0%B8%D0%BB%D0%B8-%D0%B8%D0%BA%D0%BE%D0%BD%D0%BA%D0%B0-%D0%B8%D0%B7%D0%BE%D0%BB%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D0%B0%D1%8F-%D0%BD%D0%B0-%D0%B1%D0%B5%D0%BB%D0%BE%D0%BC-%D1%84%D0%BE%D0%BD%D0%B5-%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D1%8B%D0%B9-%D0%B4%D0%B8%D0%B7%D0%B0%D0%B9%D0%BD-%D0%B8-%D0%B8%D0%BB%D0%BB%D1%8E%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F.jpg?s=612x612&w=0&k=20&c=XtcuVJqRCSbldccojzqyfZrvT-8fa7IL4piuCKBag1I=",
-        };
+        setUser(userData);
+        setIsAuthenticated(true);
+
+        localStorage.setItem("auth_token", response.token || "");
+        localStorage.setItem("user_data", JSON.stringify(userData));
+
+        return true;
       }
 
-      if (!mockUser) {
-        return false; // Неверные учетные данные
-      }
-
-      setUser(mockUser);
-      setIsAuthenticated(true);
-
-      localStorage.setItem("auth_token", `mock_token_${mockUser.id}`);
-      localStorage.setItem("user_data", JSON.stringify(mockUser));
-
-      return true;
+      return false;
     } catch (error) {
+      console.error("Login error:", error);
       return false;
     }
   };
@@ -118,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const logout = () => {
+    apiService.logout();
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem("auth_token");

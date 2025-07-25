@@ -52,37 +52,6 @@ db.serialize(() => {
     )
   `);
 
-  // Payments table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS payments (
-      id TEXT PRIMARY KEY,
-      certificate_id TEXT NOT NULL,
-      order_number TEXT NOT NULL,
-      amount INTEGER NOT NULL,
-      status TEXT NOT NULL DEFAULT 'pending',
-      payment_type TEXT NOT NULL,
-      alfa_bank_order_id TEXT,
-      client_name TEXT,
-      client_email TEXT,
-      description TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (certificate_id) REFERENCES certificates (id)
-    )
-  `);
-
-  // SMS notifications table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS sms_notifications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      phone_number TEXT NOT NULL,
-      message TEXT NOT NULL,
-      status TEXT DEFAULT 'pending',
-      twilio_sid TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
   // Email notifications table
   db.run(`
     CREATE TABLE IF NOT EXISTS email_notifications (
@@ -102,19 +71,25 @@ db.serialize(() => {
   db.run(
     "CREATE INDEX IF NOT EXISTS idx_transactions_certificate_id ON transactions(certificate_id)"
   );
-  db.run(
-    "CREATE INDEX IF NOT EXISTS idx_payments_certificate_id ON payments(certificate_id)"
-  );
-  db.run("CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)");
 
   // Insert default admin user
   const adminPassword = bcrypt.hashSync("admin123", 10);
+  const managerPassword = bcrypt.hashSync("manager123", 10);
+
   db.run(
     `
     INSERT OR IGNORE INTO users (username, password, email, role)
     VALUES (?, ?, ?, ?)
   `,
     ["admin", adminPassword, "admin@clinic.com", "admin"]
+  );
+
+  db.run(
+    `
+    INSERT OR IGNORE INTO users (username, password, email, role)
+    VALUES (?, ?, ?, ?)
+  `,
+    ["manager1", managerPassword, "manager@clinic.com", "manager"]
   );
 
   // Insert sample certificates

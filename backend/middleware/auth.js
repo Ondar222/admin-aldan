@@ -4,8 +4,7 @@ import Database from "../utils/database.js";
 
 const db = new Database();
 
-// Middleware to verify JWT token
-export const authenticateToken = async (req, res, next) => {
+export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
@@ -13,18 +12,52 @@ export const authenticateToken = async (req, res, next) => {
     return res.status(401).json({ error: "Access token required" });
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await db.getUserById(decoded.userId);
-
-    if (!user) {
-      return res.status(401).json({ error: "Invalid token" });
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: "Invalid token" });
     }
-
     req.user = user;
     next();
+  });
+};
+
+// Middleware для проверки роли супер админа
+export const requireSuperAdmin = async (req, res, next) => {
+  try {
+    const user = await db.getUserById(req.user.id);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        error: "Super admin access required",
+      });
+    }
+    next();
   } catch (error) {
-    return res.status(403).json({ error: "Invalid token" });
+    console.error("Error checking user role:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+};
+
+// Middleware для проверки роли админа (любого уровня)
+export const requireAdmin = async (req, res, next) => {
+  try {
+    const user = await db.getUserById(req.user.id);
+    if (!user || (user.role !== "admin" && user.role !== "manager")) {
+      return res.status(403).json({
+        success: false,
+        error: "Admin access required",
+      });
+    }
+    next();
+  } catch (error) {
+    console.error("Error checking user role:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
   }
 };
 
@@ -68,7 +101,7 @@ export const login = async (username, password) => {
 // Register function
 export const register = async (userData) => {
   try {
-    const { username, password, email, role = "admin" } = userData;
+    const { username, password, email, role = "manager" } = userData;
 
     // Check if user already exists
     const existingUser = await db.getUserByUsername(username);
@@ -79,12 +112,13 @@ export const register = async (userData) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user (this would need to be implemented in Database class)
-    // For now, we'll use a simple insert
-    const result = await db.run(
-      "INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)",
-      [username, hashedPassword, email, role]
-    );
+    // Create user
+    const result = await db.createUser({
+      username,
+      password: hashedPassword,
+      email,
+      role,
+    });
 
     return {
       success: true,

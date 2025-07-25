@@ -89,46 +89,6 @@ class Database {
     );
   }
 
-  // Payment methods
-  async createPayment(paymentData) {
-    const {
-      id,
-      certificate_id,
-      order_number,
-      amount,
-      payment_type,
-      client_name,
-      client_email,
-      description,
-    } = paymentData;
-
-    return this.run(
-      `INSERT INTO payments (id, certificate_id, order_number, amount, payment_type, 
-        client_name, client_email, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        certificate_id,
-        order_number,
-        amount,
-        payment_type,
-        client_name,
-        client_email,
-        description,
-      ]
-    );
-  }
-
-  async updatePaymentStatus(id, status, alfa_bank_order_id = null) {
-    return this.run(
-      "UPDATE payments SET status = ?, alfa_bank_order_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-      [status, alfa_bank_order_id, id]
-    );
-  }
-
-  async getPayment(id) {
-    return this.get("SELECT * FROM payments WHERE id = ?", [id]);
-  }
-
   // User methods
   async getUserByUsername(username) {
     return this.get("SELECT * FROM users WHERE username = ?", [username]);
@@ -138,19 +98,11 @@ class Database {
     return this.get("SELECT * FROM users WHERE id = ?", [id]);
   }
 
-  // SMS methods
-  async createSmsNotification(smsData) {
-    const { phone_number, message } = smsData;
+  async createUser(userData) {
+    const { username, password, email, role } = userData;
     return this.run(
-      "INSERT INTO sms_notifications (phone_number, message) VALUES (?, ?)",
-      [phone_number, message]
-    );
-  }
-
-  async updateSmsStatus(id, status, twilio_sid = null) {
-    return this.run(
-      "UPDATE sms_notifications SET status = ?, twilio_sid = ? WHERE id = ?",
-      [status, twilio_sid, id]
+      "INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)",
+      [username, password, email, role]
     );
   }
 

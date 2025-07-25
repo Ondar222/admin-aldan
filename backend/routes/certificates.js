@@ -2,16 +2,16 @@ import express from "express";
 import { body, validationResult } from "express-validator";
 import crypto from "crypto";
 import Database from "../utils/database.js";
-import SmsService from "../services/smsService.js";
 import EmailService from "../services/emailService.js";
-import PaymentService from "../services/paymentService.js";
-import { authenticateToken } from "../middleware/auth.js";
+import {
+  authenticateToken,
+  requireSuperAdmin,
+  requireAdmin,
+} from "../middleware/auth.js";
 
 const router = express.Router();
 const db = new Database();
-const smsService = new SmsService();
 const emailService = new EmailService();
-const paymentService = new PaymentService();
 
 // Get all certificates
 router.get("/", authenticateToken, async (req, res) => {
@@ -55,10 +55,11 @@ router.get("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Create new certificate
+// Create new certificate (only super admin)
 router.post(
   "/",
   authenticateToken,
+  requireSuperAdmin,
   [
     body("balance")
       .isInt({ min: 1 })
@@ -124,10 +125,11 @@ router.post(
   }
 );
 
-// Update certificate balance
+// Update certificate balance (only super admin)
 router.patch(
   "/:id/balance",
   authenticateToken,
+  requireSuperAdmin,
   [
     body("operation")
       .isIn(["add", "subtract"])

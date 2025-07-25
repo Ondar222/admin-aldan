@@ -112,43 +112,8 @@ class ApiService {
     });
   }
 
-  async createPayment(
-    certificateId: string,
-    paymentData: {
-      amount: number;
-      payment_type: 'activate' | 'topup';
-      client_name?: string;
-      client_email?: string;
-      description?: string;
-    }
-  ) {
-    return this.request(`/certificates/${certificateId}/payment`, {
-      method: 'POST',
-      body: JSON.stringify(paymentData),
-    });
-  }
-
   async getCertificateTransactions(id: string) {
     return this.request(`/certificates/${id}/transactions`);
-  }
-
-  async getCertificatePayments(id: string) {
-    return this.request(`/certificates/${id}/payments`);
-  }
-
-  // Payment methods
-  async getPayment(id: string) {
-    return this.request(`/payments/${id}`);
-  }
-
-  async checkPaymentStatus(id: string) {
-    return this.request(`/payments/${id}/status`);
-  }
-
-  async cancelPayment(id: string) {
-    return this.request(`/payments/${id}/cancel`, {
-      method: 'POST',
-    });
   }
 
   // Utility methods

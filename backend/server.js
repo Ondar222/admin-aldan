@@ -9,7 +9,6 @@ import { dirname, join } from "path";
 // Import routes
 import authRoutes from "./routes/auth.js";
 import certificateRoutes from "./routes/certificates.js";
-import paymentRoutes from "./routes/payments.js";
 
 // Load environment variables
 dotenv.config();
@@ -26,7 +25,7 @@ app.use(helmet());
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5176",
     credentials: true,
   })
 );
@@ -63,7 +62,6 @@ app.get("/health", (req, res) => {
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/certificates", certificateRoutes);
-app.use("/api/payments", paymentRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

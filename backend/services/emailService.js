@@ -184,27 +184,6 @@ class EmailService {
     return this.sendEmail(certificate.client_email, subject, message);
   }
 
-  async sendPaymentReceived(certificate, amount) {
-    if (!certificate.client_email) return;
-
-    const subject = `Платеж получен - Сертификат №${certificate.id}`;
-    const message = `
-Здравствуйте!
-
-Мы получили ваш платеж на пополнение сертификата.
-
-Сумма платежа: ₽${amount.toLocaleString()}
-Новый баланс сертификата: ₽${certificate.balance.toLocaleString()}
-
-Спасибо за доверие!
-
-С уважением,
-Команда клиники
-    `;
-
-    return this.sendEmail(certificate.client_email, subject, message);
-  }
-
   async sendLowBalanceWarning(certificate) {
     if (!certificate.client_email) return;
 
