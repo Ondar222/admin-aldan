@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  LayoutDashboard,
-  Award,
-  CreditCard,
-  Settings,
-  LogOut,
-  Gift,
-  Code,
-} from "lucide-react";
+import { LayoutDashboard, Award, Settings, LogOut, Gift } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAuth as useAuthContext } from "../contexts/AuthContext";
 import "../styles/Sidebar.css";
@@ -30,13 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const menuItems = [
     { id: "dashboard", label: "Панель управления", icon: LayoutDashboard },
-    ...(user?.role === "admin"
-      ? [{ id: "payments", label: "Платежи", icon: CreditCard }]
-      : []),
     { id: "certificates", label: "Сертификаты", icon: Gift },
-    ...(user?.role === "admin"
-      ? [{ id: "widget-test", label: "Виджет", icon: Code }]
-      : []),
     { id: "settings", label: "Настройки", icon: Settings },
   ];
 

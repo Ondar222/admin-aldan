@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Login } from "./components/Login";
 import { Dashboard } from "./components/Dashboard";
-import { PaymentSystem } from "./components/PaymentSystem";
 import { Settings } from "./components/Settings";
 import { CertificateManager } from "./components/CertificateManager";
-import { CertificateWidgetTest } from "./components/CertificateWidgetTest";
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { useAuth } from "./hooks/useAuth";
@@ -30,20 +28,6 @@ function AppContent() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Redirect managers away from widget-test tab
-  useEffect(() => {
-    if (activeTab === "widget-test" && authUser?.role !== "admin") {
-      setActiveTab("dashboard");
-    }
-  }, [activeTab, authUser?.role]);
-
-  // Redirect managers away from payments tab
-  useEffect(() => {
-    if (activeTab === "payments" && authUser?.role !== "admin") {
-      setActiveTab("dashboard");
-    }
-  }, [activeTab, authUser?.role]);
-
   if (!isAuthenticated) {
     return <Login />;
   }
@@ -52,26 +36,8 @@ function AppContent() {
     switch (activeTab) {
       case "dashboard":
         return <Dashboard />;
-      case "payments":
-        // Показываем платежи только супер админам
-        if (authUser?.role === "admin") {
-          return <PaymentSystem />;
-        } else {
-          // Если менеджер попытается перейти к платежам, перенаправляем на dashboard
-          setActiveTab("dashboard");
-          return <Dashboard />;
-        }
       case "certificates":
         return <CertificateManager />;
-      case "widget-test":
-        // Показываем виджет только супер админам
-        if (authUser?.role === "admin") {
-          return <CertificateWidgetTest />;
-        } else {
-          // Если менеджер попытается перейти к виджету, перенаправляем на dashboard
-          setActiveTab("dashboard");
-          return <Dashboard />;
-        }
       case "settings":
         return <Settings />;
       default:
