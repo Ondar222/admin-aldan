@@ -18,8 +18,27 @@
       "destination": "/api/server"
     },
     {
+      "source": "/widget",
+      "destination": "/widget.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/widget.html",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'self' https://someshit.yurta.site"
+        }
+      ]
     }
   ]
 } 
