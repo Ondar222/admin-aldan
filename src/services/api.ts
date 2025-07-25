@@ -7,6 +7,8 @@ interface ApiResponse<T = any> {
   message?: string;
   token?: string;
   user?: any;
+  certificates?: T[];
+  certificate?: T;
 }
 
 class ApiService {

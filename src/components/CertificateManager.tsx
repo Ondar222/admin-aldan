@@ -6,23 +6,29 @@ import {
 } from "../utils/certificateGenerator";
 import { CertificatePreview } from "./CertificatePreview";
 import { AlfaBankWidget } from "./AlfaBankWidget";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Search, Plus, RefreshCw } from "lucide-react";
+import { apiService } from "../services/api";
 import "../styles/CertificateManager.css";
 
 interface Certificate {
   id: string;
-  number: string; // 6-значный номер сертификата
+  balance: number;
+  status: "unpaid" | "paid" | "used";
+  client_name?: string;
+  client_email?: string;
+  client_phone?: string;
+  created_at: string;
+  updated_at: string;
+  transactions?: Transaction[];
+}
+
+interface Transaction {
+  id: string;
+  certificate_id: string;
+  type: "create" | "add" | "subtract";
   amount: number;
-  status: "active" | "used";
-  buyerName: string;
-  buyerPhone: string;
-  buyerEmail: string;
-  recipientName?: string;
-  recipientPhone?: string;
-  recipientEmail?: string;
-  message?: string;
-  createdAt: Date;
-  usedAmount: number;
+  description: string;
+  created_at: string;
 }
 
 export const CertificateManager: React.FC = () => {
@@ -32,6 +38,9 @@ export const CertificateManager: React.FC = () => {
   const [searchResult, setSearchResult] = useState<Certificate | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [alfaBankConfig, setAlfaBankConfig] = useState<any>(null);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Load Alfa Bank config from localStorage
   useEffect(() => {
@@ -40,6 +49,26 @@ export const CertificateManager: React.FC = () => {
       setAlfaBankConfig(JSON.parse(savedConfig));
     }
   }, []);
+
+  // Load certificates on component mount
+  useEffect(() => {
+    loadCertificates();
+  }, []);
+
+  const loadCertificates = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getCertificates();
+      if (response.success && response.certificates) {
+        setCertificates(response.certificates as Certificate[]);
+      }
+    } catch (error) {
+      console.error("Error loading certificates:", error);
+      alert("Ошибка при загрузке сертификатов");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Form states for buying certificate
   const [buyerName, setBuyerName] = useState("");
@@ -54,117 +83,43 @@ export const CertificateManager: React.FC = () => {
   const [pendingCertificate, setPendingCertificate] =
     useState<Certificate | null>(null);
 
-  // Mock certificates data (в реальном проекте это будет в базе данных)
-  const [certificates, setCertificates] = useState<Certificate[]>([
-    {
-      id: "1",
-      number: "123456",
-      amount: 5000,
-      status: "active",
-      buyerName: "Иван Иванов",
-      buyerPhone: "+7 999 123-45-67",
-      buyerEmail: "ivan@example.com",
-      recipientName: "Петр Петров",
-      recipientPhone: "+7 999 987-65-43",
-      recipientEmail: "petr@example.com",
-      message: "С днем рождения!",
-      createdAt: new Date("2024-01-15"),
-      usedAmount: 0,
-    },
-    {
-      id: "2",
-      number: "789012",
-      amount: 3000,
-      status: "used",
-      buyerName: "Мария Сидорова",
-      buyerPhone: "+7 999 111-22-33",
-      buyerEmail: "maria@example.com",
-      createdAt: new Date("2024-01-10"),
-      usedAmount: 3000,
-    },
-    {
-      id: "3",
-      number: "345678",
-      amount: 10000,
-      status: "active",
-      buyerName: "Анна Козлова",
-      buyerPhone: "+7 999 555-44-33",
-      buyerEmail: "anna@example.com",
-      createdAt: new Date("2024-01-20"),
-      usedAmount: 2000,
-    },
-    {
-      id: "4",
-      number: "000123",
-      amount: 2500,
-      status: "active",
-      buyerName: "Сергей Волков",
-      buyerPhone: "+7 999 777-88-99",
-      buyerEmail: "sergey@example.com",
-      createdAt: new Date("2024-01-25"),
-      usedAmount: 0,
-    },
-  ]);
-
   const generateCertificateNumber = (): string => {
     // Генерируем ровно 6 цифр
-    let number: string;
-    let attempts = 0;
-    const maxAttempts = 100;
-
-    do {
-      number = Math.floor(100000 + Math.random() * 900000).toString();
-      attempts++;
-    } while (
-      certificates.some(
-        (cert) =>
-          formatCertificateNumber(cert.number) ===
-          formatCertificateNumber(number)
-      ) &&
-      attempts < maxAttempts
-    );
-
-    if (attempts >= maxAttempts) {
-      throw new Error("Не удалось сгенерировать уникальный номер сертификата");
-    }
-
-    // Гарантируем, что номер всегда 6 цифр
-    return formatCertificateNumber(number);
+    return Math.floor(100000 + Math.random() * 900000).toString();
   };
 
   // Проверка, что номер состоит из 6 цифр
   const isValidCertificateNumber = (number: string): boolean => {
-    // Проверяем, что строка содержит ровно 6 цифр
     return /^\d{6}$/.test(number);
   };
 
   // Форматирование номера для отображения (всегда 6 цифр)
   const formatCertificateNumber = (number: string): string => {
-    // Убеждаемся, что номер всегда 6 цифр
-    const cleanNumber = number.replace(/\D/g, ""); // Убираем все не-цифры
+    const cleanNumber = number.replace(/\D/g, "");
     return cleanNumber.padStart(6, "0");
   };
 
-  const createCertificate = () => {
+  const createCertificate = async () => {
     try {
-      const newCertificate: Certificate = {
-        id: Date.now().toString(),
-        number: generateCertificateNumber(),
-        amount: parseFloat(amount),
-        status: "active",
-        buyerName,
-        buyerPhone,
-        buyerEmail,
-        recipientName: sendType === "other" ? recipientName : undefined,
-        recipientPhone: sendType === "other" ? recipientPhone : undefined,
-        recipientEmail: sendType === "other" ? recipientEmail : buyerEmail,
-        message: sendType === "other" ? message : undefined,
-        createdAt: new Date(),
-        usedAmount: 0,
+      const certificateData = {
+        balance: parseInt(amount),
+        client_name: buyerName,
+        client_email: buyerEmail,
+        client_phone: buyerPhone,
       };
 
-      setPendingCertificate(newCertificate);
-      setShowPreview(true);
+      const response = await apiService.createCertificate(certificateData);
+
+      if (response.success && response.certificate) {
+        const newCertificate = response.certificate as Certificate;
+        setPendingCertificate(newCertificate);
+        setShowPreview(true);
+
+        // Обновляем список сертификатов
+        await loadCertificates();
+      } else {
+        alert("Ошибка при создании сертификата");
+      }
     } catch (error) {
       console.error("Ошибка при создании сертификата:", error);
       alert("Произошла ошибка при создании сертификата. Попробуйте еще раз.");
@@ -173,7 +128,6 @@ export const CertificateManager: React.FC = () => {
 
   const confirmCertificate = async () => {
     if (pendingCertificate) {
-      setCertificates([...certificates, pendingCertificate]);
       await generateAndSendCertificate(pendingCertificate);
       setShowPreview(false);
       setPendingCertificate(null);
@@ -187,38 +141,36 @@ export const CertificateManager: React.FC = () => {
 
       // Создаем сертификат
       const certificateImage = generator.createSimpleCertificate({
-        number: certificate.number,
-        amount: certificate.amount,
-        recipientName: certificate.recipientName,
-        message: certificate.message,
+        number: certificate.id,
+        amount: certificate.balance,
+        recipientName: certificate.client_name,
+        message: message,
       });
 
       // Отправляем на почту
       const emailSent = await sendCertificateByEmail(
         certificateImage,
-        certificate.recipientEmail || certificate.buyerEmail,
+        certificate.client_email || "",
         {
-          number: certificate.number,
-          amount: certificate.amount,
-          recipientName: certificate.recipientName,
-          message: certificate.message,
+          number: certificate.id,
+          amount: certificate.balance,
+          recipientName: certificate.client_name,
+          message: message,
         }
       );
 
       if (emailSent) {
         alert(
-          `Сертификат №${formatCertificateNumber(
-            certificate.number
-          )} на сумму ${certificate.amount}₽ создан и отправлен на ${
-            certificate.recipientEmail || certificate.buyerEmail
-          }`
+          `Сертификат №${formatCertificateNumber(certificate.id)} на сумму ${
+            certificate.balance
+          }₽ создан и отправлен на ${certificate.client_email}`
         );
 
         // Предлагаем скачать сертификат
         if (confirm("Хотите скачать сертификат?")) {
           downloadCertificate(
             certificateImage,
-            `certificate-${formatCertificateNumber(certificate.number)}.png`
+            `certificate-${formatCertificateNumber(certificate.id)}.png`
           );
         }
       }
@@ -239,34 +191,77 @@ export const CertificateManager: React.FC = () => {
     setMessage("");
   };
 
-  const searchCertificate = () => {
+  const searchCertificate = async () => {
     if (!isValidCertificateNumber(searchNumber)) {
       alert("Номер сертификата должен состоять из 6 цифр");
       return;
     }
 
-    // Ищем сертификат, сравнивая отформатированные номера
-    const formattedSearchNumber = formatCertificateNumber(searchNumber);
-    const found = certificates.find(
-      (cert) => formatCertificateNumber(cert.number) === formattedSearchNumber
-    );
-    setSearchResult(found || null);
+    try {
+      setSearchLoading(true);
+      const formattedSearchNumber = formatCertificateNumber(searchNumber);
+
+      const response = await apiService.getCertificate(formattedSearchNumber);
+
+      if (response.success && response.certificate) {
+        setSearchResult(response.certificate as Certificate);
+      } else {
+        setSearchResult(null);
+        alert("Сертификат не найден");
+      }
+    } catch (error) {
+      console.error("Ошибка при поиске сертификата:", error);
+      setSearchResult(null);
+      alert("Ошибка при поиске сертификата");
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
-  const useCertificate = (certificateId: string, useAmount: number) => {
-    setCertificates((certs) =>
-      certs.map((cert) => {
-        if (cert.id === certificateId) {
-          const newUsedAmount = cert.usedAmount + useAmount;
-          return {
-            ...cert,
-            usedAmount: newUsedAmount,
-            status: newUsedAmount >= cert.amount ? "used" : "active",
-          };
-        }
-        return cert;
-      })
-    );
+  const useCertificate = async (certificateId: string, useAmount: number) => {
+    try {
+      const response = await apiService.updateCertificateBalance(
+        certificateId,
+        "subtract",
+        useAmount,
+        "Оплата услуг"
+      );
+
+      if (response.success) {
+        alert(`С сертификата списано ${useAmount}₽`);
+        setSearchResult(null);
+        setSearchNumber("");
+        await loadCertificates();
+      } else {
+        alert("Ошибка при списании средств");
+      }
+    } catch (error) {
+      console.error("Ошибка при списании средств:", error);
+      alert("Ошибка при списании средств");
+    }
+  };
+
+  const addBalance = async (certificateId: string, addAmount: number) => {
+    try {
+      const response = await apiService.updateCertificateBalance(
+        certificateId,
+        "add",
+        addAmount,
+        "Пополнение баланса"
+      );
+
+      if (response.success) {
+        alert(`На сертификат добавлено ${addAmount}₽`);
+        setSearchResult(null);
+        setSearchNumber("");
+        await loadCertificates();
+      } else {
+        alert("Ошибка при пополнении баланса");
+      }
+    } catch (error) {
+      console.error("Ошибка при пополнении баланса:", error);
+      alert("Ошибка при пополнении баланса");
+    }
   };
 
   const isFormValid = () => {
@@ -289,21 +284,21 @@ export const CertificateManager: React.FC = () => {
 
     // Create certificate after successful payment
     if (pendingCertificate) {
-      const newCertificate = {
+      const newCertificate: Certificate = {
         ...pendingCertificate,
-        id: Date.now().toString(),
-        number: generateCertificateNumber(),
-        createdAt: new Date(),
+        id: generateCertificateNumber(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
-      setCertificates((prev) => [newCertificate, ...prev]);
-      setPendingCertificate(null);
+      setCertificates((prev: Certificate[]) => [newCertificate, ...prev]);
+      setPendingCertificate(null as Certificate | null);
       setShowPaymentModal(false);
 
       // Generate and send certificate
       generateAndSendCertificate(newCertificate);
 
-      alert(`Сертификат успешно создан! Номер: ${newCertificate.number}`);
+      alert(`Сертификат успешно создан! Номер: ${newCertificate.id}`);
     }
   };
 
@@ -320,23 +315,44 @@ export const CertificateManager: React.FC = () => {
 
     // Create pending certificate
     const pendingCert: Certificate = {
-      id: "pending",
-      number: generateCertificateNumber(),
-      amount: parseInt(amount),
-      status: "active",
-      buyerName,
-      buyerPhone,
-      buyerEmail,
-      recipientName: sendType === "other" ? recipientName : undefined,
-      recipientPhone: sendType === "other" ? recipientPhone : undefined,
-      recipientEmail: sendType === "other" ? recipientEmail : undefined,
-      message,
-      createdAt: new Date(),
-      usedAmount: 0,
+      id: generateCertificateNumber(),
+      balance: parseInt(amount),
+      status: "unpaid",
+      client_name: buyerName,
+      client_email: buyerEmail,
+      client_phone: buyerPhone,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     setPendingCertificate(pendingCert);
     setShowPaymentModal(true);
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "unpaid":
+        return "Не оплачен";
+      case "paid":
+        return "Оплачен";
+      case "used":
+        return "Использован";
+      default:
+        return status;
+    }
+  };
+
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "unpaid":
+        return "status-unpaid";
+      case "paid":
+        return "status-paid";
+      case "used":
+        return "status-used";
+      default:
+        return "";
+    }
   };
 
   interface CertificatePaymentModalProps {
@@ -353,19 +369,19 @@ export const CertificateManager: React.FC = () => {
     onSuccess,
   }) => {
     const [orderData, setOrderData] = useState({
-      amount: certificate.amount.toString(),
-      orderNumber: `CERT-${certificate.number}-${Date.now()}`,
-      clientName: certificate.buyerName,
-      clientEmail: certificate.buyerEmail,
-      description: `Покупка сертификата №${certificate.number}`,
+      amount: certificate.balance.toString(),
+      orderNumber: `CERT-${certificate.id}-${Date.now()}`,
+      clientName: certificate.client_name || "",
+      clientEmail: certificate.client_email || "",
+      description: `Покупка сертификата №${certificate.id}`,
     });
 
     const handlePaymentSuccess = (paymentData: any) => {
       onSuccess({
         ...paymentData,
         amount: orderData.amount,
-        certificateNumber: certificate.number,
-        buyerName: certificate.buyerName,
+        certificateNumber: certificate.id,
+        buyerName: certificate.client_name,
       });
     };
 
@@ -380,9 +396,9 @@ export const CertificateManager: React.FC = () => {
           </div>
 
           <div className="certificate-info">
-            <p className="certificate-id">Сертификат №{certificate.number}</p>
+            <p className="certificate-id">Сертификат №{certificate.id}</p>
             <p className="certificate-balance">
-              Сумма: ₽{certificate.amount.toLocaleString()}
+              Сумма: ₽{certificate.balance.toLocaleString()}
             </p>
           </div>
 
@@ -447,19 +463,19 @@ export const CertificateManager: React.FC = () => {
               <div className="certificate-details">
                 <h4>Детали сертификата</h4>
                 <p>
-                  <strong>Покупатель:</strong> {certificate.buyerName}
+                  <strong>Покупатель:</strong> {certificate.client_name}
                 </p>
                 <p>
-                  <strong>Телефон:</strong> {certificate.buyerPhone}
+                  <strong>Телефон:</strong> {certificate.client_phone}
                 </p>
-                {certificate.recipientName && (
+                {certificate.client_email && (
                   <p>
-                    <strong>Получатель:</strong> {certificate.recipientName}
+                    <strong>Email:</strong> {certificate.client_email}
                   </p>
                 )}
-                {certificate.message && (
+                {message && (
                   <p>
-                    <strong>Сообщение:</strong> {certificate.message}
+                    <strong>Сообщение:</strong> {message}
                   </p>
                 )}
               </div>
@@ -470,14 +486,14 @@ export const CertificateManager: React.FC = () => {
               <div className="widget-content">
                 <div className="payment-summary">
                   <p>
-                    <strong>Сертификат:</strong> №{certificate.number}
+                    <strong>Сертификат:</strong> №{certificate.id}
                   </p>
                   <p>
                     <strong>Сумма:</strong> ₽
                     {parseInt(orderData.amount || "0").toLocaleString()}
                   </p>
                   <p>
-                    <strong>Покупатель:</strong> {certificate.buyerName}
+                    <strong>Покупатель:</strong> {certificate.client_name}
                   </p>
                 </div>
 
@@ -495,7 +511,6 @@ export const CertificateManager: React.FC = () => {
               className="settings-link"
               onClick={(e) => {
                 e.preventDefault();
-                // Navigate to payments page
                 window.location.hash = "payments";
               }}
             >
@@ -655,29 +670,36 @@ export const CertificateManager: React.FC = () => {
           <div className="search-section">
             <h3>Проверка сертификата</h3>
             <div className="search-form">
-              <input
-                type="text"
-                placeholder="Введите номер сертификата (6 цифр)"
-                value={searchNumber}
-                onChange={(e) => {
-                  // Разрешаем только цифры
-                  const value = e.target.value.replace(/\D/g, "");
-                  setSearchNumber(value);
-                }}
-                maxLength={6}
-                pattern="[0-9]{6}"
-                className={
-                  searchNumber.length > 0 && searchNumber.length < 6
-                    ? "input-warning"
-                    : ""
-                }
-              />
-              <button
-                onClick={searchCertificate}
-                disabled={searchNumber.length !== 6}
-              >
-                Проверить
-              </button>
+              <div className="search-input-container">
+                <Search className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Введите номер сертификата (6 цифр)"
+                  value={searchNumber}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+                    setSearchNumber(value);
+                  }}
+                  maxLength={6}
+                  pattern="[0-9]{6}"
+                  className={
+                    searchNumber.length > 0 && searchNumber.length < 6
+                      ? "input-warning"
+                      : ""
+                  }
+                />
+                <button
+                  onClick={searchCertificate}
+                  disabled={searchNumber.length !== 6 || searchLoading}
+                  className="search-button"
+                >
+                  {searchLoading ? (
+                    <RefreshCw className="loading-icon" />
+                  ) : (
+                    "Проверить"
+                  )}
+                </button>
+              </div>
               {searchNumber.length > 0 && searchNumber.length < 6 && (
                 <div className="search-hint">Введите ровно 6 цифр</div>
               )}
@@ -690,116 +712,183 @@ export const CertificateManager: React.FC = () => {
               <div className="certificate-info">
                 <p>
                   <strong>Номер:</strong>{" "}
-                  {formatCertificateNumber(searchResult.number)}
+                  {formatCertificateNumber(searchResult.id)}
                 </p>
                 <p>
                   <strong>Статус:</strong>
-                  <span className={`status ${searchResult.status}`}>
-                    {searchResult.status === "active"
-                      ? "Активен"
-                      : "Использован"}
+                  <span
+                    className={`status ${getStatusClass(searchResult.status)}`}
+                  >
+                    {getStatusText(searchResult.status)}
                   </span>
                 </p>
                 <p>
-                  <strong>Сумма:</strong> {searchResult.amount}₽
+                  <strong>Баланс:</strong> {searchResult.balance}₽
                 </p>
                 <p>
-                  <strong>Использовано:</strong> {searchResult.usedAmount}₽
+                  <strong>Покупатель:</strong>{" "}
+                  {searchResult.client_name || "Не указан"}
                 </p>
                 <p>
-                  <strong>Остаток:</strong>{" "}
-                  {searchResult.amount - searchResult.usedAmount}₽
+                  <strong>Телефон:</strong>{" "}
+                  {searchResult.client_phone || "Не указан"}
                 </p>
                 <p>
-                  <strong>Покупатель:</strong> {searchResult.buyerName}
+                  <strong>Email:</strong>{" "}
+                  {searchResult.client_email || "Не указан"}
                 </p>
                 <p>
                   <strong>Дата создания:</strong>{" "}
-                  {searchResult.createdAt.toLocaleDateString()}
+                  {new Date(searchResult.created_at).toLocaleDateString()}
                 </p>
               </div>
 
-              {searchResult.status === "active" && (
+              {searchResult.status === "paid" && (
                 <div className="use-certificate">
-                  <h5>Использовать сертификат</h5>
-                  <input
-                    type="number"
-                    placeholder="Сумма к списанию"
-                    min="1"
-                    max={searchResult.amount - searchResult.usedAmount}
-                    id="useAmount"
-                  />
-                  <button
-                    onClick={() => {
-                      const useAmount = parseFloat(
-                        (
-                          document.getElementById(
-                            "useAmount"
-                          ) as HTMLInputElement
-                        ).value
-                      );
-                      if (
-                        useAmount > 0 &&
-                        useAmount <=
-                          searchResult.amount - searchResult.usedAmount
-                      ) {
-                        useCertificate(searchResult.id, useAmount);
-                        setSearchResult(null);
-                        setSearchNumber("");
-                      }
-                    }}
-                  >
-                    Списать сумму
-                  </button>
+                  <h5>Управление сертификатом</h5>
+                  <div className="certificate-actions">
+                    <div className="action-group">
+                      <label>Списать сумму:</label>
+                      <input
+                        type="number"
+                        placeholder="Сумма к списанию"
+                        min="1"
+                        max={searchResult.balance}
+                        id="useAmount"
+                      />
+                      <button
+                        onClick={() => {
+                          const useAmount = parseFloat(
+                            (
+                              document.getElementById(
+                                "useAmount"
+                              ) as HTMLInputElement
+                            ).value
+                          );
+                          if (
+                            useAmount > 0 &&
+                            useAmount <= searchResult.balance
+                          ) {
+                            useCertificate(searchResult.id, useAmount);
+                          } else {
+                            alert("Неверная сумма для списания");
+                          }
+                        }}
+                        className="action-button subtract"
+                      >
+                        Списать
+                      </button>
+                    </div>
+
+                    <div className="action-group">
+                      <label>Пополнить баланс:</label>
+                      <input
+                        type="number"
+                        placeholder="Сумма пополнения"
+                        min="1"
+                        id="addAmount"
+                      />
+                      <button
+                        onClick={() => {
+                          const addAmount = parseFloat(
+                            (
+                              document.getElementById(
+                                "addAmount"
+                              ) as HTMLInputElement
+                            ).value
+                          );
+                          if (addAmount > 0) {
+                            addBalance(searchResult.id, addAmount);
+                          } else {
+                            alert("Неверная сумма для пополнения");
+                          }
+                        }}
+                        className="action-button add"
+                      >
+                        Пополнить
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           )}
 
           <div className="certificates-list">
-            <h3>Все сертификаты</h3>
-            <div className="certificates-grid">
-              {certificates.map((cert) => (
-                <div key={cert.id} className="certificate-card">
-                  <div className="certificate-header">
-                    <span className="certificate-number">
-                      №{formatCertificateNumber(cert.number)}
-                    </span>
-                    <span className={`status ${cert.status}`}>
-                      {cert.status === "active" ? "Активен" : "Использован"}
-                    </span>
-                  </div>
-                  <div className="certificate-details">
-                    <p>
-                      <strong>Сумма:</strong> {cert.amount}₽
-                    </p>
-                    <p>
-                      <strong>Использовано:</strong> {cert.usedAmount}₽
-                    </p>
-                    <p>
-                      <strong>Остаток:</strong> {cert.amount - cert.usedAmount}₽
-                    </p>
-                    <p>
-                      <strong>Покупатель:</strong> {cert.buyerName}
-                    </p>
-                    <p>
-                      <strong>Дата:</strong>{" "}
-                      {cert.createdAt.toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="list-header">
+              <h3>Все сертификаты</h3>
+              <button
+                onClick={loadCertificates}
+                disabled={loading}
+                className="refresh-button"
+              >
+                {loading ? (
+                  <RefreshCw className="loading-icon" />
+                ) : (
+                  <RefreshCw />
+                )}
+                Обновить
+              </button>
             </div>
+
+            {loading ? (
+              <div className="loading-message">Загрузка сертификатов...</div>
+            ) : certificates.length === 0 ? (
+              <div className="empty-message">Сертификаты не найдены</div>
+            ) : (
+              <div className="certificates-grid">
+                {certificates.map((cert) => (
+                  <div key={cert.id} className="certificate-card">
+                    <div className="certificate-header">
+                      <span className="certificate-number">
+                        №{formatCertificateNumber(cert.id)}
+                      </span>
+                      <span className={`status ${getStatusClass(cert.status)}`}>
+                        {getStatusText(cert.status)}
+                      </span>
+                    </div>
+                    <div className="certificate-details">
+                      <p>
+                        <strong>Баланс:</strong> {cert.balance}₽
+                      </p>
+                      <p>
+                        <strong>Покупатель:</strong>{" "}
+                        {cert.client_name || "Не указан"}
+                      </p>
+                      <p>
+                        <strong>Телефон:</strong>{" "}
+                        {cert.client_phone || "Не указан"}
+                      </p>
+                      <p>
+                        <strong>Дата:</strong>{" "}
+                        {new Date(cert.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="certificate-actions">
+                      <button
+                        onClick={() => {
+                          setSearchNumber(cert.id);
+                          searchCertificate();
+                        }}
+                        className="action-button view"
+                      >
+                        Просмотреть
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {showPreview && pendingCertificate && (
         <CertificatePreview
-          number={pendingCertificate.number}
-          amount={pendingCertificate.amount}
-          recipientName={pendingCertificate.recipientName}
-          message={pendingCertificate.message}
+          number={pendingCertificate.id}
+          amount={pendingCertificate.balance}
+          recipientName={pendingCertificate.client_name}
+          message={message}
           onClose={() => {
             setShowPreview(false);
             setPendingCertificate(null);

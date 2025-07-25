@@ -20,7 +20,10 @@ router.get("/", authenticateToken, async (req, res) => {
     res.json({ success: true, certificates });
   } catch (error) {
     console.error("Error fetching certificates:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
   }
 });
 
@@ -30,7 +33,10 @@ router.get("/:id", authenticateToken, async (req, res) => {
     const certificate = await db.getCertificate(req.params.id);
 
     if (!certificate) {
-      return res.status(404).json({ error: "Certificate not found" });
+      return res.status(404).json({
+        success: false,
+        error: "Certificate not found",
+      });
     }
 
     // Get transactions for this certificate
@@ -42,7 +48,10 @@ router.get("/:id", authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching certificate:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
   }
 });
 
@@ -107,7 +116,10 @@ router.post(
       });
     } catch (error) {
       console.error("Error creating certificate:", error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({
+        success: false,
+        error: "Internal server error",
+      });
     }
   }
 );
@@ -149,7 +161,10 @@ router.patch(
 
       // Check if enough balance for subtraction
       if (operation === "subtract" && newBalance < 0) {
-        return res.status(400).json({ error: "Insufficient balance" });
+        return res.status(400).json({
+          success: false,
+          error: "Insufficient balance",
+        });
       }
 
       // Update balance
@@ -196,7 +211,10 @@ router.patch(
       });
     } catch (error) {
       console.error("Error updating certificate balance:", error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({
+        success: false,
+        error: "Internal server error",
+      });
     }
   }
 );
@@ -233,7 +251,10 @@ router.post(
       // Get certificate
       const certificate = await db.getCertificate(certificateId);
       if (!certificate) {
-        return res.status(404).json({ error: "Certificate not found" });
+        return res.status(404).json({
+          success: false,
+          error: "Certificate not found",
+        });
       }
 
       // Generate order number
@@ -261,7 +282,10 @@ router.post(
       });
     } catch (error) {
       console.error("Error creating payment order:", error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({
+        success: false,
+        error: "Internal server error",
+      });
     }
   }
 );
@@ -273,7 +297,10 @@ router.get("/:id/transactions", authenticateToken, async (req, res) => {
     res.json({ success: true, transactions });
   } catch (error) {
     console.error("Error fetching transactions:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
   }
 });
 
@@ -286,7 +313,10 @@ router.get("/:id/payments", authenticateToken, async (req, res) => {
     res.json({ success: true, payments });
   } catch (error) {
     console.error("Error fetching payments:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
   }
 });
 

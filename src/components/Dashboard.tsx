@@ -638,7 +638,6 @@ const BalanceOperationModal: React.FC<BalanceOperationModalProps> = ({
     </div>
   );
 };
-
 interface PaymentModalProps {
   certificate: Certificate;
   paymentType: "activate" | "topup";

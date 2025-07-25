@@ -6,6 +6,7 @@ import {
   Settings,
   LogOut,
   Gift,
+  Code,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import "../styles/Sidebar.css";
@@ -29,6 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "dashboard", label: "Панель управления", icon: LayoutDashboard },
     { id: "payments", label: "Платежи", icon: CreditCard },
     { id: "certificates", label: "Сертификаты", icon: Gift },
+    { id: "widget-test", label: "Виджет", icon: Code },
     { id: "settings", label: "Настройки", icon: Settings },
   ];
 

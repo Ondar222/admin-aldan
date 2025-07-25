@@ -4,6 +4,7 @@ import { Dashboard } from "./components/Dashboard";
 import { PaymentSystem } from "./components/PaymentSystem";
 import { Settings } from "./components/Settings";
 import { CertificateManager } from "./components/CertificateManager";
+import { CertificateWidgetTest } from "./components/CertificateWidgetTest";
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { useAuth } from "./hooks/useAuth";
@@ -39,6 +40,8 @@ function AppContent() {
         return <PaymentSystem />;
       case "certificates":
         return <CertificateManager />;
+      case "widget-test":
+        return <CertificateWidgetTest />;
       case "settings":
         return <Settings />;
       default:

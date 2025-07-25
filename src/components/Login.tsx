@@ -88,18 +88,18 @@ export const Login: React.FC = () => {
 
           <div className="form-group">
             <label htmlFor="email" className="form-label">
-              Email
+              Логин
             </label>
             <div className="input-container">
-              <Mail className="input-icon" />
+              <User className="input-icon" />
               <input
-                type="email"
+                type="text"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
                 className="form-input"
-                placeholder="admin@clinic.com"
+                placeholder="admin"
                 required
               />
             </div>
@@ -149,19 +149,25 @@ export const Login: React.FC = () => {
               "Зарегистрироваться"
             )}
           </button>
-
-          <div className="toggle-form">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="toggle-button"
-            >
-              {isLogin
-                ? "Нет аккаунта? Зарегистрируйтесь"
-                : "Уже есть аккаунт? Войдите"}
-            </button>
-          </div>
         </form>
+
+        <div className="login-footer">
+          <p className="login-hint">
+            <strong>Тестовые аккаунты:</strong>
+          </p>
+          <div className="test-accounts">
+            <div className="test-account">
+              <strong>Супер Админ:</strong>
+              <span>admin / admin123</span>
+              <small>(может создавать, пополнять и списывать)</small>
+            </div>
+            <div className="test-account">
+              <strong>Менеджер:</strong>
+              <span>manager1 / manager123</span>
+              <small>(может только проверять и списывать)</small>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
